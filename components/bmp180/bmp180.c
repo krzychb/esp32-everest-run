@@ -1,5 +1,5 @@
 /*
- BMP180 pressure sensor driver for ESP32
+ bmp180.c - BMP180 pressure sensor driver for ESP32
 
  This file is part of the ESP32 Everest Run project
  https://github.com/krzychb/esp32-everest-run
@@ -183,7 +183,17 @@ float bmp180_read_altitude(uint32_t sea_level_pressure)
 
 esp_err_t bmp180_init(int pin_sda, int pin_scl)
 {
-    twi_init(pin_sda, pin_scl);
+	if (portTICK_RATE_MS > 1) {
+		/* portTICK_RATE_MS should be 1ms,
+		   use 'make menuconfig' to update it
+		   by setting Tick rate to 1000
+		   under Component config > FreeRTOS > Tick rate (Hz)
+		 */
+		ESP_LOGE(TAG, "FreeRTOS tick rate (%d) too slow", portTICK_RATE_MS);
+		return ESP_ERR_BMP180_NOT_DETECTED;
+	}
+
+	twi_init(pin_sda, pin_scl);
 
     uint8_t reg = 0x00;
 	if (twi_writeTo(BMP180_ADDRESS, &reg, 1, true) == 0) {

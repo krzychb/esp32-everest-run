@@ -25,21 +25,23 @@
 
 static const char* TAG = "HTTP";
 
-// Constants that aren't configurable in menuconfig
-#define WEB_SERVER "api.openweathermap.org"
-#define WEB_PORT "80"
-#define WEB_URL "http://api.openweathermap.org/data/2.5/weather?id=756135&appid"
 
-// The API key below is configurable in menuconfig
-#define OPENWEATHERMAP_API_KEY CONFIG_OPENWEATHERMAP_API_KEY
+void http_client_on_connected(http_client_data *client, http_callback http_on_connected_cb)
+{
+	client->http_connected_cb = http_on_connected_cb;
+}
 
+void http_client_on_process_chunk(http_client_data *client, http_callback http_process_chunk_cb)
+{
+	client->http_process_chunk_cb = http_process_chunk_cb;
+}
 
-static const char *REQUEST = "GET " WEB_URL"="OPENWEATHERMAP_API_KEY" HTTP/1.1\n"
-    "Host: "WEB_SERVER"\n"
-    "User-Agent: esp-idf/1.0 esp32\n"
-    "\n";
+void http_client_on_disconnected(http_client_data *client, http_callback http_disconnected_cb)
+{
+	client->http_disconnected_cb = http_disconnected_cb;
+}
 
-void http_request(void)
+void http_client_request(http_client_data *client, const char *web_server, const char *request_string)
 {
     const struct addrinfo hints = {
         .ai_family = AF_INET,
@@ -50,6 +52,8 @@ void http_request(void)
     int s, r;
     char recv_buf[64];
 
+    client->chunk_buffer = recv_buf;
+
     while(1) {
         /* Wait for the callback to set the CONNECTED_BIT in the
            event group.
@@ -58,7 +62,7 @@ void http_request(void)
         xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
                            false, true, portMAX_DELAY);
 
-        int err = getaddrinfo(WEB_SERVER, WEB_PORT, &hints, &res);
+        int err = getaddrinfo(web_server, "80", &hints, &res);
 
         if(err != 0 || res == NULL) {
             ESP_LOGE(TAG, "DNS lookup failed err=%d res=%p", err, res);
@@ -67,8 +71,8 @@ void http_request(void)
         }
 
         /* Code to print the resolved IP.
-
-           Note: inet_ntoa is non-reentrant, look at ipaddr_ntoa_r for "real" code */
+           Note: inet_ntoa is non-reentrant, look at ipaddr_ntoa_r for "real" code
+         */
         addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
         ESP_LOGI(TAG, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
 
@@ -91,8 +95,9 @@ void http_request(void)
 
         ESP_LOGI(TAG, "... connected");
         freeaddrinfo(res);
+        client->http_connected_cb((uint32_t*) client);
 
-        if (write(s, REQUEST, strlen(REQUEST)) < 0) {
+        if (write(s, request_string, strlen(request_string)) < 0) {
             ESP_LOGE(TAG, "... socket send failed");
             close(s);
             vTaskDelay(4000 / portTICK_RATE_MS);
@@ -104,12 +109,11 @@ void http_request(void)
         do {
             bzero(recv_buf, sizeof(recv_buf));
             r = read(s, recv_buf, sizeof(recv_buf)-1);
-            for(int i = 0; i < r; i++) {
-                putchar(recv_buf[i]);
-            }
+            client->http_process_chunk_cb((uint32_t*) client);
         } while(r > 0);
 
         ESP_LOGI(TAG, "... done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
         close(s);
+        client->http_disconnected_cb((uint32_t*) client);
     }
 }

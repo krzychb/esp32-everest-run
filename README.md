@@ -18,7 +18,7 @@ Internet connected altimeter for Everest Run - http://everestrun.pl/
 - [x] Prepare a prototype using ESP32-DevKitJ-v1 development board
 - [x] Develop an I2C driver to read altitude from BMP180 sensor
 - [x] Synchronize time on ESP32 by obtaining it from a NTP server
-- [ ] Implement compensation of altitude measurement using absolute pressure obtained on-line from internet
+- [ ] Implement compensation of altitude measurement using absolute pressure obtained on-line
 - [ ] Publish altitude measurements in real time on [ThingSpeak](https://thingspeak.com/)
 - [ ] Implement data buffering on ESP32 for the period of likely Wi-Fi connection losses
 - [ ] Build lightweight, battery powered altimeter using bare [ESP-WROOM-32](https://espressif.com/en/products/hardware/esp-wroom-32/overview) module

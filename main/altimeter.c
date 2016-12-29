@@ -41,6 +41,20 @@ static const char* TAG = "Altimeter";
 #define I2C_PIN_SCL 27
 
 
+// Constants that aren't configurable in menuconfig
+#define WEB_SERVER "api.openweathermap.org"
+#define WEB_URL "http://api.openweathermap.org/data/2.5/weather?id=756135&appid"
+
+// The API key below is configurable in menuconfig
+#define OPENWEATHERMAP_API_KEY CONFIG_OPENWEATHERMAP_API_KEY
+
+static const char *get_request = "GET " WEB_URL"="OPENWEATHERMAP_API_KEY" HTTP/1.1\n"
+    "Host: "WEB_SERVER"\n"
+    "User-Agent: esp-idf/1.0 esp32\n"
+    "\n";
+
+http_client_data http_client;
+
 void blink_task(void *pvParameter)
 {
     /* Configure the IOMUX register for pad BLINK_GPIO (some pads are
@@ -72,10 +86,27 @@ void bmp180_task(void *pvParameter)
     }
 }
 
+void connected(uint32_t *args)
+{
+
+    ESP_LOGI(TAG, "HTTP CONNECTED");
+}
+
+void process_chunk(uint32_t *args)
+{
+    http_client_data* client = (http_client_data*)args;
+    printf("%s", client->chunk_buffer);
+}
+
+void disconnected(uint32_t *args)
+{
+    ESP_LOGI(TAG, "HTTP DISCONNECTED");
+}
+
 void http_request_task(void *pvParameter)
 {
     while(1) {
-        http_request();
+    	http_client_request(&http_client, WEB_SERVER, get_request);
         vTaskDelay(10000 / portTICK_RATE_MS);
     }
 }
@@ -87,7 +118,6 @@ void sync_time_task(void *pvParameter)
         vTaskDelay(NTP_SYNCHRONISATION_PERIOD / portTICK_RATE_MS);
     }
 }
-
 
 void app_main()
 {
@@ -109,7 +139,10 @@ void app_main()
         ESP_LOGE(TAG, "BMP180 init failed with error = %d", err);
     }
 
+    http_client_on_connected(&http_client, connected);
+    http_client_on_process_chunk(&http_client, process_chunk);
+    http_client_on_disconnected(&http_client, disconnected);
+
     xTaskCreate(&http_request_task, "http_request_task", 4096, NULL, 5, NULL);
     ESP_LOGI(TAG, "HTTP request task started");
-
 }

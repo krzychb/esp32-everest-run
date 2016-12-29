@@ -8,8 +8,8 @@
  This work is licensed under the Apache License, Version 2.0, January 2004
  See the file LICENSE for details.
 */
-#ifndef WIFI_h
-#define WIFI_h
+#ifndef WIFI_H
+#define WIFI_H
 
 #ifdef __cplusplus
 extern "C" {
