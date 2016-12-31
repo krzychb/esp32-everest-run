@@ -1,5 +1,5 @@
 /*
- Altitude recording and transmission using ESP32 and BMP180 sensor
+ altimeter.c - Altitude recording and transmission using ESP32 and BMP180 sensor
 
  This file is part of the ESP32 Everest Run project
  https://github.com/krzychb/esp32-everest-run
@@ -10,6 +10,7 @@
 */
 
 #include <stdio.h>
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
@@ -18,8 +19,8 @@
 
 #include "wifi.h"
 #include "sntp.h"
-#include "http.h"
 #include "bmp180.h"
+#include "weather.h"
 #include "driver/gpio.h"
 
 static const char* TAG = "Altimeter";
@@ -40,20 +41,8 @@ static const char* TAG = "Altimeter";
 #define I2C_PIN_SDA 25
 #define I2C_PIN_SCL 27
 
-
-// Constants that aren't configurable in menuconfig
-#define WEB_SERVER "api.openweathermap.org"
-#define WEB_URL "http://api.openweathermap.org/data/2.5/weather?id=756135&appid"
-
-// The API key below is configurable in menuconfig
-#define OPENWEATHERMAP_API_KEY CONFIG_OPENWEATHERMAP_API_KEY
-
-static const char *get_request = "GET " WEB_URL"="OPENWEATHERMAP_API_KEY" HTTP/1.1\n"
-    "Host: "WEB_SERVER"\n"
-    "User-Agent: esp-idf/1.0 esp32\n"
-    "\n";
-
-http_client_data http_client;
+#define WEATHER_DATA_REREIVAL_PERIOD 15000
+weather_data weather = {0};
 
 void blink_task(void *pvParameter)
 {
@@ -86,31 +75,6 @@ void bmp180_task(void *pvParameter)
     }
 }
 
-void connected(uint32_t *args)
-{
-
-    ESP_LOGI(TAG, "HTTP CONNECTED");
-}
-
-void process_chunk(uint32_t *args)
-{
-    http_client_data* client = (http_client_data*)args;
-    printf("%s", client->chunk_buffer);
-}
-
-void disconnected(uint32_t *args)
-{
-    ESP_LOGI(TAG, "HTTP DISCONNECTED");
-}
-
-void http_request_task(void *pvParameter)
-{
-    while(1) {
-    	http_client_request(&http_client, WEB_SERVER, get_request);
-        vTaskDelay(10000 / portTICK_RATE_MS);
-    }
-}
-
 void sync_time_task(void *pvParameter)
 {
     while(1) {
@@ -131,6 +95,9 @@ void app_main()
     xTaskCreate(&blink_task, "blink_task", 512, NULL, 5, NULL);
     ESP_LOGI(TAG, "Blink task started");
 
+    initialise_weather_data_retrieval(&weather, WEATHER_DATA_REREIVAL_PERIOD);
+    ESP_LOGI(TAG, "Weather data retreival initialised");
+
     esp_err_t err = bmp180_init(I2C_PIN_SDA, I2C_PIN_SCL);
     if(err == ESP_OK){
         xTaskCreate(&bmp180_task, "bmp180_task", 2048, NULL, 5, NULL);
@@ -138,11 +105,4 @@ void app_main()
     } else {
         ESP_LOGE(TAG, "BMP180 init failed with error = %d", err);
     }
-
-    http_client_on_connected(&http_client, connected);
-    http_client_on_process_chunk(&http_client, process_chunk);
-    http_client_on_disconnected(&http_client, disconnected);
-
-    xTaskCreate(&http_request_task, "http_request_task", 4096, NULL, 5, NULL);
-    ESP_LOGI(TAG, "HTTP request task started");
 }
