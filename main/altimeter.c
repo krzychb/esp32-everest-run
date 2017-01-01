@@ -17,11 +17,12 @@
 #include "nvs_flash.h"
 #include "esp_log.h"
 
+#include "driver/gpio.h"
 #include "wifi.h"
 #include "sntp.h"
 #include "bmp180.h"
 #include "weather.h"
-#include "driver/gpio.h"
+#include "thingspeak.h"
 
 static const char* TAG = "Altimeter";
 
@@ -40,9 +41,20 @@ static const char* TAG = "Altimeter";
 */
 #define I2C_PIN_SDA 25
 #define I2C_PIN_SCL 27
+#define BP180_SENSOR_READ_PERIOD 15000
+altitude_data altitude_record;
 
 #define WEATHER_DATA_REREIVAL_PERIOD 15000
 weather_data weather = {0};
+
+void weather_data_retreived(uint32_t *args)
+{
+	weather_data* weather = (weather_data*)args;
+
+	ESP_LOGI(TAG, "Humidity: %u %%", weather->humidity);
+	ESP_LOGI(TAG, "Temperature: %.1f dec C", weather->temperature - 273.15);
+	ESP_LOGI(TAG, "Pressure: %u hPa", weather->pressure);
+}
 
 void blink_task(void *pvParameter)
 {
@@ -68,10 +80,26 @@ void blink_task(void *pvParameter)
 void bmp180_task(void *pvParameter)
 {
     while(1) {
-        ESP_LOGI(TAG, "Temperature %0.1f deg C", bmp180_read_temperature());
-        ESP_LOGI(TAG, "Pressure %d Pa", bmp180_read_pressure());
-        ESP_LOGI(TAG, "Altitude %0.1f m", bmp180_read_altitude(101325));
-        vTaskDelay(3000 / portTICK_RATE_MS);
+    	altitude_record.pressure = (unsigned long) bmp180_read_pressure();
+    	altitude_record.temperature = bmp180_read_temperature();
+        ESP_LOGI(TAG, "Pressure (BMP180) %lu Pa", altitude_record.pressure);
+        ESP_LOGI(TAG, "Temperature (BMP180) %0.1f deg C", altitude_record.temperature);
+        /* Compensate altitude measurement
+           using current pressure at the sea level
+           obtained from weather station on internet
+           Assume normal air pressure at sea level of 101325 Pa
+           in case weather station is not available.
+         */
+        unsigned long sea_level_pressure = 101325;
+        if (weather.pressure > 0){
+        	sea_level_pressure = weather.pressure * 100l;
+        }
+        altitude_record.altitude = bmp180_read_altitude(sea_level_pressure);
+    	ESP_LOGI(TAG, "Altitude (BMP180) %0.1f m", altitude_record.altitude);
+
+    	thinkgspeak_post_data(&altitude_record);
+
+        vTaskDelay(BP180_SENSOR_READ_PERIOD / portTICK_RATE_MS);
     }
 }
 
@@ -96,7 +124,11 @@ void app_main()
     ESP_LOGI(TAG, "Blink task started");
 
     initialise_weather_data_retrieval(&weather, WEATHER_DATA_REREIVAL_PERIOD);
+    on_weather_data_retrieval(&weather, weather_data_retreived);
     ESP_LOGI(TAG, "Weather data retreival initialised");
+
+    thinkgspeak_initialise();
+    ESP_LOGI(TAG, "Posting to ThingSpeakinitialised");
 
     esp_err_t err = bmp180_init(I2C_PIN_SDA, I2C_PIN_SCL);
     if(err == ESP_OK){
