@@ -18,14 +18,14 @@
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
-#include "twi.h"
 
+#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include "soc/gpio_reg.h"
-#include <stdio.h>
 #include "esp_log.h"
 
+#include "include/twi.h"
 #include "wiring.h"
 
 static const char* TAG = "I2C";

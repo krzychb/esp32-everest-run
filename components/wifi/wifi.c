@@ -18,7 +18,7 @@
 #include "esp_event_loop.h"
 #include "esp_wifi.h"
 
-#include "include/wifi.h"
+#include "wifi.h"
 
 static const char* TAG = "Wi-Fi";
 

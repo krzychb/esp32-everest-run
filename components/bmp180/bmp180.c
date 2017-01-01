@@ -9,12 +9,13 @@
  See the file LICENSE for details.
  */
 
-#include <math.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include "esp_log.h"
 
-#include "include/bmp180.h"
+#include <math.h>
+
+#include "bmp180.h"
 #include "twi.h"
 
 static const char* TAG = "BMP180";
@@ -174,7 +175,7 @@ uint32_t bmp180_read_pressure(void)
 	return p;
 }
 
-float bmp180_read_altitude(uint32_t sea_level_pressure)
+float bmp180_read_altitude(unsigned long sea_level_pressure)
 {
 	uint32_t absolute_pressure = bmp180_read_pressure();
 	return 44330 * (1.0 - powf(absolute_pressure / (float) sea_level_pressure, 0.190295));

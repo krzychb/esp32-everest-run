@@ -25,7 +25,7 @@ extern "C" {
 esp_err_t bmp180_init(int pin_sda, int pin_scl);
 float bmp180_read_temperature(void);
 uint32_t bmp180_read_pressure(void);
-float bmp180_read_altitude(uint32_t sea_level_pressure);
+float bmp180_read_altitude(unsigned long sea_level_pressure);
 
 #ifdef __cplusplus
 }

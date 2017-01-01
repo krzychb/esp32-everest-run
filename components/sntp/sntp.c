@@ -18,7 +18,7 @@
 #include <sys/time.h>
 #include "apps/sntp/sntp.h"
 
-#include "include/sntp.h"
+#include "sntp.h"
 
 static const char* TAG = "SNTP";
 

@@ -22,7 +22,8 @@ typedef void (*weather_data_callback)(uint32_t *args);
 typedef struct {
 	unsigned int humidity;
 	float temperature;
-	unsigned long pressure;
+	unsigned int pressure;
+	unsigned long retreival_period;
 	weather_data_callback data_retreived_cb;
 } weather_data;
 
