@@ -1,6 +1,8 @@
 /*
  sntp.c - NTP synchronisation routines
 
+ File based on https://github.com/espressif/esp-idf/tree/master/examples/06_sntp
+
  This file is part of the ESP32 Everest Run project
  https://github.com/krzychb/esp32-everest-run
 
@@ -45,12 +47,12 @@ void sync_time(void)
         localtime_r(&now, &timeinfo);
     }
 
-	char strftime_buf[64];
+    char strftime_buf[64];
 
-	// Set timezone to Central European Time and print local time
-	setenv("TZ", "CET-1CEST,M3.5.0/1,M10.5.0/1", 1);
-	tzset();
-	localtime_r(&now, &timeinfo);
-	strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-	ESP_LOGI(TAG, "The current date/time in Warsaw is: %s", strftime_buf);
+    // Set timezone to Central European Time and print local time
+    setenv("TZ", "CET-1CEST,M3.5.0/1,M10.5.0/1", 1);
+    tzset();
+    localtime_r(&now, &timeinfo);
+    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    ESP_LOGI(TAG, "The current date/time in Warsaw is: %s", strftime_buf);
 }

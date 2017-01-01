@@ -49,11 +49,11 @@ weather_data weather = {0};
 
 void weather_data_retreived(uint32_t *args)
 {
-	weather_data* weather = (weather_data*)args;
+    weather_data* weather = (weather_data*)args;
 
-	ESP_LOGI(TAG, "Humidity: %u %%", weather->humidity);
-	ESP_LOGI(TAG, "Temperature: %.1f dec C", weather->temperature - 273.15);
-	ESP_LOGI(TAG, "Pressure: %u hPa", weather->pressure);
+    ESP_LOGI(TAG, "Humidity: %u %%", weather->humidity);
+    ESP_LOGI(TAG, "Temperature: %.1f dec C", weather->temperature - 273.15);
+    ESP_LOGI(TAG, "Pressure: %u hPa", weather->pressure);
 }
 
 void blink_task(void *pvParameter)
@@ -80,8 +80,8 @@ void blink_task(void *pvParameter)
 void bmp180_task(void *pvParameter)
 {
     while(1) {
-    	altitude_record.pressure = (unsigned long) bmp180_read_pressure();
-    	altitude_record.temperature = bmp180_read_temperature();
+        altitude_record.pressure = (unsigned long) bmp180_read_pressure();
+        altitude_record.temperature = bmp180_read_temperature();
         ESP_LOGI(TAG, "Pressure (BMP180) %lu Pa", altitude_record.pressure);
         ESP_LOGI(TAG, "Temperature (BMP180) %0.1f deg C", altitude_record.temperature);
         /* Compensate altitude measurement
@@ -92,12 +92,12 @@ void bmp180_task(void *pvParameter)
          */
         unsigned long sea_level_pressure = 101325;
         if (weather.pressure > 0){
-        	sea_level_pressure = weather.pressure * 100l;
+            sea_level_pressure = weather.pressure * 100l;
         }
         altitude_record.altitude = bmp180_read_altitude(sea_level_pressure);
-    	ESP_LOGI(TAG, "Altitude (BMP180) %0.1f m", altitude_record.altitude);
+        ESP_LOGI(TAG, "Altitude (BMP180) %0.1f m", altitude_record.altitude);
 
-    	thinkgspeak_post_data(&altitude_record);
+        thinkgspeak_post_data(&altitude_record);
 
         vTaskDelay(BP180_SENSOR_READ_PERIOD / portTICK_RATE_MS);
     }

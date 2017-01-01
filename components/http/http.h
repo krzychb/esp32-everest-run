@@ -24,13 +24,13 @@ extern const int CONNECTED_BIT;
 typedef void (*http_callback)(uint32_t *args);
 
 typedef struct {
-	char *recv_buf;
-	int recv_buf_size;
-	char *proc_buf;
-	int proc_buf_size;
-	http_callback http_connected_cb;
-	http_callback http_process_chunk_cb;
-	http_callback http_disconnected_cb;
+    char *recv_buf;
+    int recv_buf_size;
+    char *proc_buf;
+    int proc_buf_size;
+    http_callback http_connected_cb;
+    http_callback http_process_chunk_cb;
+    http_callback http_disconnected_cb;
 } http_client_data;
 
 #define ESP_ERR_HTTP_BASE 0x40000

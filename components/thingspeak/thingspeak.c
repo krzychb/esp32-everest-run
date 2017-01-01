@@ -31,13 +31,13 @@ static const char* TAG = "ThingSpeak";
 #define THINGSPEAK_WRITE_API_KEY CONFIG_THINGSPEAK_WRITE_API_KEY
 
 static const char *get_request_start =
-	"GET /update?key="
-	THINGSPEAK_WRITE_API_KEY;
+    "GET /update?key="
+    THINGSPEAK_WRITE_API_KEY;
 
 static const char *get_request_end =
-	" HTTP/1.1\n"
+    " HTTP/1.1\n"
     "Host: "WEB_SERVER"\n"
-	"Connection: close\n"
+    "Connection: close\n"
     "User-Agent: esp-idf/1.0 esp32\n"
     "\n";
 
@@ -54,17 +54,17 @@ static void process_chunk(uint32_t *args)
     char *copy_from;
 
     if (client->proc_buf == NULL){
-		client->proc_buf = malloc(proc_buf_new_size);
-		copy_from = client->proc_buf;
+        client->proc_buf = malloc(proc_buf_new_size);
+        copy_from = client->proc_buf;
     } else {
-    	proc_buf_new_size -= 1; // chunks of data are '\0' terminated
-		client->proc_buf = realloc(client->proc_buf, proc_buf_new_size);
-		copy_from = client->proc_buf + proc_buf_new_size - client->recv_buf_size;
+        proc_buf_new_size -= 1; // chunks of data are '\0' terminated
+        client->proc_buf = realloc(client->proc_buf, proc_buf_new_size);
+        copy_from = client->proc_buf + proc_buf_new_size - client->recv_buf_size;
     }
     if (client->proc_buf == NULL) {
         ESP_LOGE(TAG, "Failed to allocate memory");
     }
-	client->proc_buf_size = proc_buf_new_size;
+    client->proc_buf_size = proc_buf_new_size;
     memcpy(copy_from, client->recv_buf, client->recv_buf_size);
 }
 
@@ -83,37 +83,37 @@ static void disconnected(uint32_t *args)
 
 void thinkgspeak_post_data(altitude_data *altitude_record)
 {
-	int n;
-	n = snprintf(NULL, 0, "%lu", altitude_record->pressure);
-	char field1[n+1];
-	sprintf(field1, "%lu", altitude_record->pressure);
+    int n;
+    n = snprintf(NULL, 0, "%lu", altitude_record->pressure);
+    char field1[n+1];
+    sprintf(field1, "%lu", altitude_record->pressure);
 
-	n = snprintf(NULL, 0, "%.1f", altitude_record->altitude);
-	char field3[n+1];
-	sprintf(field3, "%.1f", altitude_record->altitude);
+    n = snprintf(NULL, 0, "%.1f", altitude_record->altitude);
+    char field3[n+1];
+    sprintf(field3, "%.1f", altitude_record->altitude);
 
-	int string_size = strlen(get_request_start);
-	string_size += strlen("&field1=");
-	string_size += strlen(field1);
-	string_size += strlen("&field3=");
-	string_size += strlen(field3);
-	string_size += strlen(get_request_end);
+    int string_size = strlen(get_request_start);
+    string_size += strlen("&field1=");
+    string_size += strlen(field1);
+    string_size += strlen("&field3=");
+    string_size += strlen(field3);
+    string_size += strlen(get_request_end);
 
-	char * get_request = malloc(string_size);
-	strcpy(get_request, get_request_start);
-	strcat(get_request, "&field1=");
-	strcat(get_request, field1);
-	strcat(get_request, "&field3=");
-	strcat(get_request, field3);
-	strcat(get_request, get_request_end);
+    char * get_request = malloc(string_size);
+    strcpy(get_request, get_request_start);
+    strcat(get_request, "&field1=");
+    strcat(get_request, field1);
+    strcat(get_request, "&field3=");
+    strcat(get_request, field3);
+    strcat(get_request, get_request_end);
 
     http_client_request(&http_client, WEB_SERVER, get_request);
 
-	free(get_request);
+    free(get_request);
 }
 
 void thinkgspeak_initialise()
 {
-	http_client_on_process_chunk(&http_client, process_chunk);
+    http_client_on_process_chunk(&http_client, process_chunk);
     http_client_on_disconnected(&http_client, disconnected);
 }
