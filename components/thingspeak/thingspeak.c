@@ -72,6 +72,10 @@ static void disconnected(uint32_t *args)
 {
     http_client_data* client = (http_client_data*)args;
 
+    // ToDo: REMOVE
+    // print server's response
+    // for diagnostic purposes
+    //
     printf("%s\n", client->proc_buf);
 
     free(client->proc_buf);
@@ -84,28 +88,59 @@ static void disconnected(uint32_t *args)
 void thinkgspeak_post_data(altitude_data *altitude_record)
 {
     int n;
+    // conversion of values to character strings
+    // 1. Pressure
     n = snprintf(NULL, 0, "%lu", altitude_record->pressure);
     char field1[n+1];
     sprintf(field1, "%lu", altitude_record->pressure);
-
+    // 2. Sea Level Pressure
+    n = snprintf(NULL, 0, "%lu", altitude_record->sea_level_pressure);
+    char field2[n+1];
+    sprintf(field2, "%lu", altitude_record->sea_level_pressure);
+    // 3. Altitude
     n = snprintf(NULL, 0, "%.1f", altitude_record->altitude);
     char field3[n+1];
     sprintf(field3, "%.1f", altitude_record->altitude);
+    // 4. Cumulative Altitude
+    // TBA field4
+    // TBA field4
+    // TBA field4
+    // 5. Temperature
+    n = snprintf(NULL, 0, "%.1f", altitude_record->temperature);
+    char field5[n+1];
+    sprintf(field5, "%.1f", altitude_record->temperature);
 
+    // request string size calculation
     int string_size = strlen(get_request_start);
-    string_size += strlen("&field1=");
+    string_size += strlen("&fieldN=") * 4;  // number of fileds
     string_size += strlen(field1);
-    string_size += strlen("&field3=");
+    string_size += strlen(field2);
     string_size += strlen(field3);
+    // TBA field4
+    string_size += strlen(field5);
     string_size += strlen(get_request_end);
+    string_size += 1;  // '\0' - space for string termination character
 
+    // request string assembly / concatenation
     char * get_request = malloc(string_size);
     strcpy(get_request, get_request_start);
     strcat(get_request, "&field1=");
     strcat(get_request, field1);
+    strcat(get_request, "&field2=");
+    strcat(get_request, field2);
     strcat(get_request, "&field3=");
     strcat(get_request, field3);
+    // TBA field4
+    // TBA field4
+    strcat(get_request, "&field5=");
+    strcat(get_request, field5);
     strcat(get_request, get_request_end);
+
+    // ToDo: REMOVE
+    // print get request
+    // for diagnostic purposes
+    //
+    printf("%d, %s\n", string_size, get_request);
 
     http_client_request(&http_client, WEB_SERVER, get_request);
 
