@@ -41,10 +41,10 @@ static const char* TAG = "Altimeter";
 */
 #define I2C_PIN_SDA 25
 #define I2C_PIN_SCL 27
-#define BP180_SENSOR_READ_PERIOD 15000
+#define BP180_SENSOR_READ_PERIOD 20000
 altitude_data altitude_record;
 
-#define WEATHER_DATA_REREIVAL_PERIOD 15000
+#define WEATHER_DATA_REREIVAL_PERIOD 20000
 weather_data weather = {0};
 
 void weather_data_retreived(uint32_t *args)
@@ -94,6 +94,7 @@ void bmp180_task(void *pvParameter)
         if (weather.pressure > 0){
             sea_level_pressure = weather.pressure * 100l;
         }
+        altitude_record.sea_level_pressure = sea_level_pressure;
         altitude_record.altitude = bmp180_read_altitude(sea_level_pressure);
         ESP_LOGI(TAG, "Altitude (BMP180) %0.1f m", altitude_record.altitude);
 
@@ -132,7 +133,7 @@ void app_main()
 
     esp_err_t err = bmp180_init(I2C_PIN_SDA, I2C_PIN_SCL);
     if(err == ESP_OK){
-        xTaskCreate(&bmp180_task, "bmp180_task", 2048, NULL, 5, NULL);
+        xTaskCreate(&bmp180_task, "bmp180_task", 3 * 1024, NULL, 5, NULL);
         ESP_LOGI(TAG, "BMP180 read task started");
     } else {
         ESP_LOGE(TAG, "BMP180 init failed with error = %d", err);
