@@ -31,6 +31,10 @@ Internet connected altimeter for Everest Run - http://everestrun.pl/
 
 Test data feed is available under https://thingspeak.com/channels/208884
 
+## Log Book
+
+For more details on project progress, please check [log book](log-book.md).
+
 ## Acknowledgments
 
 This application is using code developed by:
