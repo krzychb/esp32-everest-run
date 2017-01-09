@@ -7,9 +7,8 @@ Internet connected altimeter for Everest Run - http://everestrun.pl/
 ## Components
 
 1. [ESP32](https://espressif.com/en/products/hardware/esp32/overview) Wi-Fi + Bluetooth Combo Chip by [Espressif](https://espressif.com/)
-2. [BMP180]( https://www.bosch-sensortec.com/bst/products/all_products/bmp180) Digital pressure sensor
-3. [esp-idf](https://github.com/espressif/esp-idf)
- Espressif IoT Development Framework for ESP32
+2. [BMP180]( https://www.bosch-sensortec.com/bst/products/all_products/bmp180) Barmoetric Pressure Sensor
+3. [esp-idf](https://github.com/espressif/esp-idf) Espressif IoT Development Framework for ESP32
 
 ## Build Status
 

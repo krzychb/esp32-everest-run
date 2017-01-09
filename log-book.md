@@ -82,3 +82,17 @@ The BMP180 break boards are cheap, so I have ordered two of them. With 10 DOF IM
 ### Third training - January 3rd, 2017
 
 Organizers rotate the training places and this one was [Palace of Culture and Science](https://en.wikipedia.org/wiki/Palace_of_Culture_and_Science). The track leads through three staircases with total of 26 floors. I climbed it 13 times making altogether 338 floors. Going downstairs during training and the race is always using elevator. There are six elevators available for us. Since the training is in the afternoon after working hours, we can go down with almost no waiting for elevator to come.
+
+### Issue with resolution of pressure from OpenWeatherMap - January 9th, 2017
+
+Altitude is calculated from barometric pressure measured by BMP180 as I will be climbing. To account for pressure changes due to changing water conditions, measurement is compensated using barometric pressure at the sea level. We are obtaining the sea level pressure on-line from https://openweathermap.org/. Resolution of this value is provided only in whole hPa, that is visible as steps on the chart below.
+
+![alt text](pictures/altitude-measurement-compensation-1.png "Sea level pressure obtained from https://openweathermap.org/")
+
+Pressure increase of 1 hPa (100 Pa) at my location is equivalent to climbing of about 10 m. If I calculate altitude from pressure measured by BMP180 and compensate it with the above measurement I am getting altitude jumps up or down by about 10 m, each time pressure at the sea level jumps by +/-1 hPa.
+
+Chart below provides evidence of this issue with BMP180 sensor placed on my desk and not moved. On the left there is pressure measured by BMP180 that obviously changes due to weather conditions. The chart with altitude (right) should be flat as we compensate those changes with reference measurement obtained from OpenWeatherMap. Instead of a flat line we see jumps of altitude that correspond exactly to jumps of reference (sea level pressure) measurement.
+
+![alt text](pictures/altitude-measurement-compensation-2.png "Input pressure measurement (left) and altitude after compensation (right)")
+
+To resolve this deficiency I have asked [OpenWeatherMap](https://openweathermap.org/) to provide pressure value with more significant digits. If they are unable to do so, I am planning to switch to another service that provides better resolution, like [Weather Station of Warsaw Technical University](http://www.if.pw.edu.pl/~meteo/okienkow.php). Another option is to set up own reference pressure measurement.
