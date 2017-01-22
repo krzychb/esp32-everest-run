@@ -68,43 +68,6 @@ static void process_chunk(uint32_t *args)
     memcpy(copy_from, client->recv_buf, client->recv_buf_size);
 }
 
-
-/* Out of HTTP response return pointer to response body
-   Function return NULL if end of header cannot be identified
- */
-static const char * find_response_body(char * response)
-{
-    // Identify end of the response headers
-    // http://stackoverflow.com/questions/11254037/how-to-know-when-the-http-headers-part-is-ended
-    char * eol; // end of line
-    char * bol; // beginning of line
-    bool nheaderfound = false; // end of response headers has been found
-
-    bol = response;
-    while ((eol = index(bol, '\n')) != NULL) {
-        // update bol based upon the value of eol
-        bol = eol + 1;
-        // test if end of headers has been reached
-        if ( (!(strncmp(bol, "\r\n", 2))) || (!(strncmp(bol, "\n", 1))) )
-        {
-           // note that end of headers has been found
-            nheaderfound = true;
-           // update the value of bol to reflect the beginning of the line
-           // immediately after the headers
-           if (bol[0] != '\n') {
-              bol += 1;
-           }
-           bol += 1;
-           break;
-        }
-    }
-    if (nheaderfound) {
-        return bol;
-    } else {
-        return NULL;
-    }
-}
-
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
     if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start &&
             strncmp(json + tok->start, s, tok->end - tok->start) == 0) {

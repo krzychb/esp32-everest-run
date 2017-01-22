@@ -39,6 +39,7 @@ typedef struct {
 #define ESP_ERR_HTTP_SOCKET_CONNECT_FAILED      (ESP_ERR_HTTP_BASE + 3)
 #define ESP_ERR_HTTP_SOCKET_SEND_FAILED         (ESP_ERR_HTTP_BASE + 4)
 
+const char* find_response_body(char * response);
 void http_client_on_connected(http_client_data *client, http_callback http_connected_cb);
 void http_client_on_process_chunk(http_client_data *client, http_callback http_process_chunk_cb);
 void http_client_on_disconnected(http_client_data *client, http_callback http_disconnected_cb);
