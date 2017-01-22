@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
@@ -18,11 +19,13 @@
 #include "esp_log.h"
 
 #include "driver/gpio.h"
+#include "altimeter.h"
+#include "bmp180.h"
 #include "wifi.h"
 #include "sntp.h"
-#include "bmp180.h"
 #include "weather.h"
 #include "thingspeak.h"
+#include "keenio.h"
 
 static const char* TAG = "Altimeter";
 
@@ -42,7 +45,7 @@ static const char* TAG = "Altimeter";
 #define I2C_PIN_SDA 25
 #define I2C_PIN_SCL 27
 #define BP180_SENSOR_READ_PERIOD 20000
-altitude_data altitude_record;
+altitude_data altitude_record = {0};
 
 #define WEATHER_DATA_REREIVAL_PERIOD 20000
 weather_data weather = {0};
@@ -90,7 +93,7 @@ void bmp180_task(void *pvParameter)
            Assume normal air pressure at sea level of 101325 Pa
            in case weather station is not available.
          */
-        unsigned long sea_level_pressure = 101325;
+        unsigned long sea_level_pressure = 101325l;
         if (weather.pressure > 0){
             sea_level_pressure = weather.pressure * 100l;
         }
@@ -98,7 +101,15 @@ void bmp180_task(void *pvParameter)
         altitude_record.altitude = bmp180_read_altitude(sea_level_pressure);
         ESP_LOGI(TAG, "Altitude (BMP180) %0.1f m", altitude_record.altitude);
 
+        time_t now = 0;
+        if (time(&now) == -1) {
+            ESP_LOGW(TAG, "Current calendar time is not available");
+        } else {
+            altitude_record.timestamp = now;
+        }
+
         thinkgspeak_post_data(&altitude_record);
+        keenio_post_data(&altitude_record);
 
         vTaskDelay(BP180_SENSOR_READ_PERIOD / portTICK_RATE_MS);
     }
@@ -129,7 +140,10 @@ void app_main()
     ESP_LOGI(TAG, "Weather data retreival initialised");
 
     thinkgspeak_initialise();
-    ESP_LOGI(TAG, "Posting to ThingSpeakinitialised");
+    ESP_LOGI(TAG, "Posting to ThingSpeak initialised");
+
+    keenio_initialise();
+    ESP_LOGI(TAG, "Posting to Keen.IO initialised");
 
     esp_err_t err = bmp180_init(I2C_PIN_SDA, I2C_PIN_SCL);
     if(err == ESP_OK){

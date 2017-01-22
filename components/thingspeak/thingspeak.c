@@ -1,5 +1,5 @@
 /*
- weather.c - Weather data retrieval from api.openweathermap.org
+ thingspeak.c - Routines to post data to ThingSpeak.com
 
  This file is part of the ESP32 Everest Run project
  https://github.com/krzychb/esp32-everest-run
@@ -30,15 +30,15 @@ static const char* TAG = "ThingSpeak";
 // The API key below is configurable in menuconfig
 #define THINGSPEAK_WRITE_API_KEY CONFIG_THINGSPEAK_WRITE_API_KEY
 
-static const char *get_request_start =
+static const char* get_request_start =
     "GET /update?key="
     THINGSPEAK_WRITE_API_KEY;
 
-static const char *get_request_end =
+static const char* get_request_end =
     " HTTP/1.1\n"
     "Host: "WEB_SERVER"\n"
     "Connection: close\n"
-    "User-Agent: esp-idf/1.0 esp32\n"
+    "User-Agent: esp32 / esp-idf\n"
     "\n";
 
 static http_client_data http_client = {0};
@@ -76,7 +76,7 @@ static void disconnected(uint32_t *args)
     // print server's response
     // for diagnostic purposes
     //
-    printf("%s\n", client->proc_buf);
+    // printf("%s\n", client->proc_buf);
 
     free(client->proc_buf);
     client->proc_buf = NULL;
@@ -109,15 +109,25 @@ void thinkgspeak_post_data(altitude_data *altitude_record)
     n = snprintf(NULL, 0, "%.1f", altitude_record->temperature);
     char field5[n+1];
     sprintf(field5, "%.1f", altitude_record->temperature);
+    // 6. Empty
+    // 7. Empty
+    // 8. Up Time
+    long up_time = esp_log_timestamp()/1000l;
+    n = snprintf(NULL, 0, "%lu", up_time);
+    char field8[n+1];
+    sprintf(field8, "%lu", up_time);
 
     // request string size calculation
     int string_size = strlen(get_request_start);
-    string_size += strlen("&fieldN=") * 4;  // number of fileds
+    string_size += strlen("&fieldN=") * 5;  // number of fields
     string_size += strlen(field1);
     string_size += strlen(field2);
     string_size += strlen(field3);
     // TBA field4
     string_size += strlen(field5);
+    // TBA field6
+    // TBA field7
+    string_size += strlen(field8);
     string_size += strlen(get_request_end);
     string_size += 1;  // '\0' - space for string termination character
 
@@ -134,13 +144,19 @@ void thinkgspeak_post_data(altitude_data *altitude_record)
     // TBA field4
     strcat(get_request, "&field5=");
     strcat(get_request, field5);
+    // TBA field6
+    // TBA field6
+    // TBA field7
+    // TBA field7
+    strcat(get_request, "&field8=");
+    strcat(get_request, field8);
     strcat(get_request, get_request_end);
 
     // ToDo: REMOVE
     // print get request
     // for diagnostic purposes
     //
-    printf("%d, %s\n", string_size, get_request);
+    // printf("%d, %s\n", string_size, get_request);
 
     http_client_request(&http_client, WEB_SERVER, get_request);
 

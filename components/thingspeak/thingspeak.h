@@ -12,19 +12,11 @@
 #define THINGSPEAK_H
 
 #include "esp_err.h"
-#include <time.h>
+#include "altimeter.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct {
-    unsigned long pressure;  /*!< Pressure [Pa] measured with BM180 */
-    unsigned long sea_level_pressure;  /*!< Pressure [Pa] measured at the sea level */
-    float altitude;  /*!< Altitude [meters] measured with BM180 and compensated to the sea level pressure */
-    float temperature;  /*!< Temperature [deg C] measured with BM180 */
-    time_t timestamp;  /*!< Data and time the altitude measurement was taken */
-} altitude_data;
 
 #define ESP_ERR_THINGSPEAK_BASE 0x60000
 #define ESP_ERR_THINGSPEAK_POST_FAILED          (ESP_ERR_THINGSPEAK_BASE + 1)

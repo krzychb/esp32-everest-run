@@ -31,4 +31,4 @@ float bmp180_read_altitude(unsigned long sea_level_pressure);
 }
 #endif
 
-#endif
+#endif  // BMP180_H
