@@ -96,3 +96,7 @@ Chart below provides evidence of this issue with BMP180 sensor placed on my desk
 ![alt text](pictures/altitude-measurement-compensation-2.png "Input pressure measurement (left) and altitude after compensation (right)")
 
 To resolve this deficiency I have asked [OpenWeatherMap](https://openweathermap.org/) to provide pressure value with more significant digits. If they are unable to do so, I am planning to switch to another service that provides better resolution, like [Weather Station of Warsaw Technical University](http://www.if.pw.edu.pl/~meteo/okienkow.php). Another option is to set up own reference pressure measurement.
+
+### Fourth training - January 11th, 2017
+
+Climbed Marriot hotel nine times x 42 floors. That makes together 378 floors. Challenge for next training: make more than 400 floors.
