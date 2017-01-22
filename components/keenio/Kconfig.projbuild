@@ -1,0 +1,22 @@
+menu "Posting data to Keen.IO"
+
+config KEENIO_WRITE_API_KEY
+    string "KeenIO write API key"
+	default "1234567890123456789012345678901234567890123456789012345678901234"
+	help
+		API key obtained from 'https://keen.io/' site.
+		
+		You need to set up a free account on this site first.
+
+config KEENIO_REQUEST_URL
+    string "KeenIO project / collection specific request URL"
+	default "/3.0/projects/123456789012345678901234/events/event-collection-name"
+	help
+		Request URL containing Project ID obtained from 'https://keen.io/' site
+		
+		and user defined event collection name.
+		
+		You need to set up a free account on this site first.
+
+
+endmenu
