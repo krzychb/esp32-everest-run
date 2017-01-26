@@ -137,7 +137,7 @@ On the other hand, I am not concerned with visualization how quickly I go down w
 
 Basing on the above rough estimates I will post data on average every 12 seconds. This is ruling out [ThinkSpeak](https://thingspeak.com/) that does not allow posting faster than once every 15 seconds. [Emoncms](https://emoncms.org/) should be fine as it allows posting every 10s.
 
-But what about data buffering and posting all values in batches? The most compelling salutation I found is provided by [Keen IO](https://keen.io/). They also provide easy method to attach time stamps to historical data that can be posted in a batch. 
+But what about data buffering and posting all values in batches? The most compelling solution I found is provided by [Keen IO](https://keen.io/). They also provide easy method to attach time stamps to historical data that can be posted in a batch. 
 
 Typical JSON to post historical data looks as follows:
 ```
@@ -164,3 +164,10 @@ For additinal details on posting data in JSON fromat check [Python Client for th
 Using free account, I can post 50,000 events per month. This is more than enough for the Everest Run (roughly about 3300 measurements). Also they do not limit how often I post the data. The only downside is that I cannot present dashboard with results on-line using [Keen IO](https://keen.io/) site. I would need to provide my own web site and query data from [Keen IO](https://keen.io/) server. I have checked with [Keen IO](https://keen.io/) and they consider option of public data visualization out of Keen IO site, but this functionality is not available yet.
 
 Repository now features a new [component](components/keenio) to post data to [Keen IO](https://keen.io/) cloud.
+
+### Fifth training
+
+#### January 25th, 2017
+
+I missed training in InterContinetal hotel last week and landed for the second time in a row in Marriot.  Climbed 42 floors x 11 times = 462 floors.  Now I have no excuse to make 500 floors during next training in Palace of Culture and Science.
+
