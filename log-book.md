@@ -2,21 +2,29 @@
 
 To reach the top of [Mount Everest](https://en.wikipedia.org/wiki/Mount_Everest), it usually takes years of preparation and thousands $ spent on equipment. [Everest Run](http://everestrun.pl/) makes it far more achievable and easier by letting you climb the highest peak of the Earth in the center of Warsaw! Well, far easier but still tough. To make it, you need to climb 2730 floors and it takes at [least 14 hours](http://everestrun.pl/wyniki-on-line-mer-2016/).
 
-### About - December 18th, 2016
+### About
+
+#### December 18th, 2016
 
 The number of people willing to participate in [Everest Run](http://everestrun.pl/) is always bigger then the limit of 200 places. I made it to the participant list only in second attempt. Some people did not pay the entrance fee and second draw was open. Now I am officially signed up for the [Everest Run](http://everestrun.pl/). My start slot is at 12:00 on February 18th, 2017.
 
-### The Story - December 19th, 2016
+### The Story
+
+#### December 19th, 2016
 
 I assessed my climbing time to be about 16 hours. This is a lot of time, beyond my imagination as for a continuous workout. Starting at 12:00 noon, I will be done next day by 4 in the morning! To be able to prove it later on to myself, that I did it, I decided to record progress throughout the race. This turned out to be a great opportunity to design, program and test in action a device to do such recording.
 
 I enjoy development of projects with chips engineered by [Espressif](https://espressif.com/) like [ESP8266](https://espressif.com/en/products/hardware/esp8266ex/overview) and [ESP32](https://espressif.com/en/products/hardware/esp32/overview). They are powerful, cheap and widely used by [enthusiastic community](https://hackaday.com/tag/espressif/). For this project I have selected ESP32 - a nice tiny Wi-Fi + Bluetooth Combo Chip launched just couple of months ago, on September 1st, 2016. ESP will record climbing altitude with a digital pressure sensor and post results to the cloud for later review.
 
-### First training - December 21st, 2016
+### First training
+
+#### December 21st, 2016
 
 To get familiar with challenge to face, I have joined group [Biegamy po schodach](https://www.facebook.com/groups/biegamyposchodach/) and started training. The first happened to be at the race place - Marriot hotel. I have climbed 42 floors 6 times, which made total of 252 floors completed within about 1 hour 30 minutes.
 
-### First components are there - December 23rd, 2016
+### First components are there
+
+#### December 23rd, 2016
 
 I found the core elements of altimeter under the Christmas tree. Good things come in pairs and here they are:
 - [ESP-WROOM-32](https://espressif.com/sites/default/files/documentation/esp_wroom_32_datasheet_en.pdf) module
@@ -24,7 +32,9 @@ I found the core elements of altimeter under the Christmas tree. Good things com
 
 ![alt text](pictures/initial-set-of-core-components.jpg "Initial set of altimeter components")
 
-### First s/w release - December 28th, 2016
+### First s/w release
+
+#### December 28th, 2016
 
 I have started with adopting existing s/w to read BMP180 sensor. Hardware I2C driver required for reading was not available yet in [esp-idf](https://github.com/espressif/esp-idf). Instead, I look for a bit bang s/w driver. I selected I2C library for ESP31B by Hristo Gochkov published within [esp32-cam-demo](https://github.com/igrr/esp32-cam-demo) by Ivan Grokhotkov. It worked great. I have added a simple function to scan I2C bus to discover addresses of BMP180 sensor and MPU9255 to be sure I have some response from 10 DOF IMU Sensor board. Then implemented the code to read individual BMP180 registers, calculate pressure and temperature out or raw values and finally calculate the altitude.
 
@@ -36,11 +46,15 @@ I have also published initial version HTTP request code. This one was also based
 
 All the testing has been done with [ESP-WROVER-KIT (DevKitJ)](https://espressif.com/sites/default/files/documentation/esp-wrover-kit_getting_started_guide_en.pdf). It that features several convenient connectors and features including JTAG interface, SD card slot, camera header, RGB LED, etc. as well as FT2232 USB to serial chip providing two USB channels and up to 3M Baud transfer speed.
 
-### Second training - December 28th, 2016
+### Second training
+
+#### December 28th, 2016
 
 Training took place in InterContinetal hotel. The place was nice with great view on Warsaw by night from the windows on the staircase. The climbing track was from level -5 to floor 43 completed 7 times. This makes 336 floors.
 
-### Convert barometric pressure into altitude - January 1nd, 2017
+### Convert barometric pressure into altitude
+
+#### January 1nd, 2017
 
 Barometric pressure changes with altitude. It decreases as we climb up and increases, as we are going down. This relationship is described with specific [formula](https://en.wikipedia.org/wiki/Atmospheric_pressure#Altitude_variation) that we can transform and use to convert from pressure back to altitude.
 
@@ -63,7 +77,9 @@ Among provided values we can find `"pressure":1031` we are looking for.
 Basing on HTTP request code from es-idf [examples folder](https://github.com/espressif/esp-idf/tree/master/examples) it was quite easy to implement data retrieval from https://openweathermap.org/.
 
 
-### Posting with ESP32 to ThingSpeak - January 1st, 2017
+### Posting with ESP32 to ThingSpeak
+
+#### January 1st, 2017
 
 HTTP request code turned out to be really useful as a standalone component. I has been reused to post data to [ThingSpeak](https://thingspeak.com/channels/208884).
 
@@ -71,7 +87,9 @@ HTTP request code turned out to be really useful as a standalone component. I ha
 
 Picture above shows pressure measurement (left), which is then converted into altitude (right). During these measurements the sensor has not been moved at all. Visible drift of altitude up (as the pressure goes down) indicates lack of compensation from pressure changes due to weather conditions. This issue will be addressed separately in next stages of this project.
 
-### Separate BMP180 sensors - January 2nd, 2017
+### Separate BMP180 sensors
+
+#### January 2nd, 2017
 
 Initial selection of 10 DOF IMU Sensors was overkill. I do not need accelerometer, gyroscope and magnetometer. All I really need is the pressure sensor to covert barometric pressure into altitude. To make my design smaller and consuming less power I decided to order another break board with BMP180 sensor only. It just arrived. As ESP32 is operating on 3.3V I would like to standardize design on this particular voltage. To do so, I plan to bypass power regulator that is in place to power the BMP180 break out with 5V.
 
@@ -79,11 +97,15 @@ Initial selection of 10 DOF IMU Sensors was overkill. I do not need acceleromete
 
 The BMP180 break boards are cheap, so I have ordered two of them. With 10 DOF IMU Sensor boards I have, one of them provided pressure measurements off by about 7%. It is always better to have some equipment redundancy for comparison and backup in case of h/w failure.
 
-### Third training - January 3rd, 2017
+### Third training
+
+#### January 3rd, 2017
 
 Organizers rotate the training places and this one was [Palace of Culture and Science](https://en.wikipedia.org/wiki/Palace_of_Culture_and_Science). The track leads through three staircases with total of 26 floors. I climbed it 13 times making altogether 338 floors. Going downstairs during training and the race is always using elevator. There are six elevators available for us. Since the training is in the afternoon after working hours, we can go down with almost no waiting for elevator to come.
 
-### Issue with resolution of pressure from OpenWeatherMap - January 9th, 2017
+### Issue with resolution of pressure from OpenWeatherMap
+
+#### January 9th, 2017
 
 Altitude is calculated from barometric pressure measured by BMP180 as I will be climbing. To account for pressure changes due to changing water conditions, measurement is compensated using barometric pressure at the sea level. We are obtaining the sea level pressure on-line from https://openweathermap.org/. Resolution of this value is provided only in whole hPa, that is visible as steps on the chart below.
 
@@ -97,6 +119,48 @@ Chart below provides evidence of this issue with BMP180 sensor placed on my desk
 
 To resolve this deficiency I have asked [OpenWeatherMap](https://openweathermap.org/) to provide pressure value with more significant digits. If they are unable to do so, I am planning to switch to another service that provides better resolution, like [Weather Station of Warsaw Technical University](http://www.if.pw.edu.pl/~meteo/okienkow.php). Another option is to set up own reference pressure measurement.
 
-### Fourth training - January 11th, 2017
+### Fourth training
+
+#### January 11th, 2017
 
 Climbed Marriot hotel nine times x 42 floors. That makes together 378 floors. Challenge for next training: make more than 400 floors.
+
+### Wi-Fi signal Coverage
+
+#### January 22nd, 2017
+
+One of issues this project should consider is losing Wi-Fi signal coverage. I may not be able to continuously transmit altitude measurements to the cloud for visualization. Climbing will take place in an evacuation / emergency exit staircase and I will go down with an elevator. In such places signal of a Wi-Fi access point may be available only at some specific spots. Therefore, I need to consider buffering of data and then sending them out in a batch once Wi-Fi connection is available. 
+
+How often should I measure and much data should I transmit? Climbing of 42 floors / 147 m takes about 10 minutes. The climbing pace is about 4s / m. (As a runner I prefer to describe how quickly I run in s ([pace](https://en.wikipedia.org/wiki/Pace_(speed)#Running)) / m than in m / s (speed). Using pace is even more appropriate for climbing that is much slower that running.) Typical unfiltered noise of altitude measurement I see with my sensor is about 0.5 m. If I apply filtering I should be able to fix this noise. On the other hand, I do not need instant visualization of altitude changes with less than a meter resolution. I think it should be sufficient to post measurement on average every 3 meters climbed. / once per about 12 seconds. This will produce about 50 measurements for one climbing round of 42 floors.
+
+On the other hand, I am not concerned with visualization how quickly I go down with an elevator. The time to travel down is less than 1 minute and I will not consider it in calculations. 
+
+Basing on the above rough estimates I will post data on average every 12 seconds. This is ruling out [ThinkSpeak](https://thingspeak.com/) that does not allow posting faster than once every 15 seconds. [Emoncms](https://emoncms.org/) should be fine as it allows posting every 10s.
+
+But what about data buffering and posting all values in batches? The most compelling salutation I found is provided by [Keen IO](https://keen.io/). They also provide easy method to attach time stamps to historical data that can be posted in a batch. 
+
+Typical JSON to post historical data looks as follows:
+```
+{
+    "everest-run" : [
+        { "Altitude": 133.1,
+          "keen": { "timestamp": "2017-01-21T10:05:34.005Z"}
+        },
+        { "Altitude": 136.5,
+          "keen": { "timestamp": "2017-01-21T10:05:46.005Z"}
+        },
+        { "Altitude": 140.1,
+          "keen": { "timestamp": "2017-01-21T10:05:59.005Z"}
+        },
+        { "Altitude": 142.9,
+          "keen": { "timestamp": "2017-01-21T10:06:13.005Z"}
+        }
+    ]
+}
+```
+
+For additinal details on posting data in JSON fromat check [Python Client for the Keen IO API](https://github.com/keenlabs/KeenClient-Python).  
+
+Using free account, I can post 50,000 events per month. This is more than enough for the Everest Run (roughly about 3300 measurements). Also they do not limit how often I post the data. The only downside is that I cannot present dashboard with results on-line using [Keen IO](https://keen.io/) site. I would need to provide my own web site and query data from [Keen IO](https://keen.io/) server. I have checked with [Keen IO](https://keen.io/) and they consider option of public data visualization out of Keen IO site, but this functionality is not available yet.
+
+Repository now features a new [component](components/keenio) to post data to [Keen IO](https://keen.io/) cloud.
