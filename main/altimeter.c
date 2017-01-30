@@ -23,7 +23,7 @@
 #include "bmp180.h"
 #include "wifi.h"
 #include "sntp.h"
-#include "weather.h"
+#include "weather_pw.h"
 #include "thingspeak.h"
 #include "keenio.h"
 
@@ -42,21 +42,19 @@ static const char* TAG = "Altimeter";
 
 /* Define pins to connect I2C pressure sensor
 */
-#define I2C_PIN_SDA 25
+#define I2C_PIN_SDA 26  // 25 - DevKitJ, 26 - Core Board
 #define I2C_PIN_SCL 27
 #define BP180_SENSOR_READ_PERIOD 20000
 altitude_data altitude_record = {0};
 
 #define WEATHER_DATA_REREIVAL_PERIOD 20000
-weather_data weather = {0};
+weather_pw_data weather = {0};
 
 void weather_data_retreived(uint32_t *args)
 {
-    weather_data* weather = (weather_data*)args;
+    weather_pw_data* weather = (weather_pw_data*)args;
 
-    ESP_LOGI(TAG, "Humidity: %u %%", weather->humidity);
-    ESP_LOGI(TAG, "Temperature: %.1f dec C", weather->temperature - 273.15);
-    ESP_LOGI(TAG, "Pressure: %u hPa", weather->pressure);
+    ESP_LOGI(TAG, "Pressure: %0.1f hPa", weather->pressure);
 }
 
 void blink_task(void *pvParameter)
@@ -95,7 +93,7 @@ void bmp180_task(void *pvParameter)
          */
         unsigned long sea_level_pressure = 101325l;
         if (weather.pressure > 0){
-            sea_level_pressure = weather.pressure * 100l;
+            sea_level_pressure = (unsigned long) (weather.pressure * 100);
         }
         altitude_record.sea_level_pressure = sea_level_pressure;
         altitude_record.altitude = bmp180_read_altitude(sea_level_pressure);
@@ -135,8 +133,8 @@ void app_main()
     xTaskCreate(&blink_task, "blink_task", 512, NULL, 5, NULL);
     ESP_LOGI(TAG, "Blink task started");
 
-    initialise_weather_data_retrieval(&weather, WEATHER_DATA_REREIVAL_PERIOD);
-    on_weather_data_retrieval(&weather, weather_data_retreived);
+    initialise_weather_pw_data_retrieval(&weather, WEATHER_DATA_REREIVAL_PERIOD);
+    on_weather_pw_data_retrieval(&weather, weather_data_retreived);
     ESP_LOGI(TAG, "Weather data retreival initialised");
 
     thinkgspeak_initialise();
