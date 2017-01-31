@@ -117,7 +117,7 @@ Chart below provides evidence of this issue with BMP180 sensor placed on my desk
 
 ![alt text](pictures/altitude-measurement-compensation-2.png "Input pressure measurement (left) and altitude after compensation (right)")
 
-To resolve this deficiency I have asked [OpenWeatherMap](https://openweathermap.org/) to provide pressure value with more significant digits. If they are unable to do so, I am planning to switch to another service that provides better resolution, like [Weather Station of Warsaw Technical University](http://www.if.pw.edu.pl/~meteo/okienkow.php). Another option is to set up own reference pressure measurement.
+To resolve this deficiency I have asked [OpenWeatherMap](https://openweathermap.org/) to provide pressure value with more significant digits. If they are unable to do so, I am planning to switch to another service that provides better resolution, like [MeteoStation](http://www.if.pw.edu.pl/~meteo/okienkow.php) by Faculty of Physics at Warsaw University of Technology. Another option is to set up own reference pressure measurement.
 
 ### Fourth training
 
@@ -171,3 +171,43 @@ Repository now features a new [component](components/keenio) to post data to [Ke
 
 I missed training in InterContinetal hotel last week and landed for the second time in a row in Marriot.  Climbed 42 floors x 11 times = 462 floors.  Now I have no excuse to make 500 floors during next training in Palace of Culture and Science.
 
+### New Provider of Weather Data
+
+#### January 30th, 2017
+
+I got reply from [OpenWeatherMap](https://openweathermap.org/) that they are unable to improve resolution of atmospheric pressure measurement, because this the resolution they get from their provider. They are also not going to change the provider to one that offers better resolution.  
+
+Basing on that I decided to implemented alternate an plan discussed [above](#issue-with-resolution-of-pressure-from-openweathermap). I will retrieve atmospheric pressure from [MeteoStation](http://www.if.pw.edu.pl/~meteo/okienkow.php) set up by Warsaw University of Technology. Comparing to [OpenWeatherMap](https://openweathermap.org/), the [MeteoStation](http://www.if.pw.edu.pl/~meteo/okienkow.php) provides atmospheric pressure in hPa with one extra significant digit after a decimal point. 
+
+They do not provide weather data in JSON format like [OpenWeatherMap](https://openweathermap.org/), so I have to phrase what is displayed on their web page. Here is short code snippet searching for `hPa` string and extracting pressure value.
+
+```c
+    char *str_pos = strstr(response_body, "hPa");
+    if (str_pos != NULL) {
+         *str_pos = '\0';  // terminate string where found 'hPa'
+        char *str_pressure = str_pos - 7;  // actual value is seven characters before ‘hPa’
+        ESP_LOGI(TAG, "Atmospheric pressure (str): %s", str_pressure);
+        // search for ',' and replace it with '.' as it is used alternatively as a decimal point
+        str_pos = strchr(str_pressure, ',');
+        if (str_pos != NULL) {
+            *str_pos = '.';
+        }
+        s_weather->pressure = atof(str_pressure);  // convert string to float
+        ESP_LOGI(TAG, "Atmospheric pressure (float): %0.1f", s_weather->pressure);
+    } else {
+        ESP_LOGE(TAG, "Could not find any atmospheric pressure value");
+    }
+```
+
+[MeteoStation](http://www.if.pw.edu.pl/~meteo/okienkow.php) is altering displayed data between Polish and English language version that uses either comma or dot for the decimal point. To be able to convert the whole string to float, code replaces comma with dot if found in phrased text.
+
+With improved resolution by one extra significant digit, the undesired fluctuations of compensated altitude measurements should be reduced by one order of magnitude. In the other words, for the altitude sensor placed in a fixed location, instead of about 10 m disturbance due to pressure compensation, I expect about 1 m disturbance. Below is sample measurements obtained from [MeteoStation](http://www.if.pw.edu.pl/~meteo/okienkow.php).
+
+![alt text](pictures/altitude-measurement-compensation-3.png "Reference pressure obtained from http://www.if.pw.edu.pl/~meteo/okienkow.php")
+
+Sure enough, when using this value for compensation the altitude now fluctuates with about 1 m instead of about 10 m.
+
+![alt text](pictures/altitude-measurement-compensation-4.png "Input pressure measurement (left) and altitude after compensation (right)")
+
+I am really happy with this improvement. 
+Atmospheric pressure value obtained from [MeteoStation](http://www.if.pw.edu.pl/~meteo/okienkow.php) is measured at 135m over the mean sea level. Therefore, I have changed the name of this variable from `Sea Level Pressure` to `Reference Pressure`. The component that retrieves reference pressure is called [weather_pw](components/weather_pw).
