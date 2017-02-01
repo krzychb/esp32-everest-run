@@ -42,7 +42,7 @@ static const char* TAG = "Altimeter";
 
 /* Define pins to connect I2C pressure sensor
 */
-#define I2C_PIN_SDA 26  // 25 - DevKitJ, 26 - Core Board
+#define I2C_PIN_SDA 25  // 25 - DevKitJ, 26 - Core Board
 #define I2C_PIN_SCL 27
 #define BP180_SENSOR_READ_PERIOD 20000
 altitude_data altitude_record = {0};
@@ -78,7 +78,7 @@ void blink_task(void *pvParameter)
     }
 }
 
-void bmp180_task(void *pvParameter)
+void altitude_measure_task(void *pvParameter)
 {
     while(1) {
         altitude_record.pressure = (unsigned long) bmp180_read_pressure();
@@ -91,12 +91,12 @@ void bmp180_task(void *pvParameter)
            Assume normal air pressure at sea level of 101325 Pa
            in case weather station is not available.
          */
-        unsigned long sea_level_pressure = 101325l;
+        unsigned long reference_pressure = 101325l;
         if (weather.pressure > 0){
-            sea_level_pressure = (unsigned long) (weather.pressure * 100);
+            reference_pressure = (unsigned long) (weather.pressure * 100);
         }
-        altitude_record.sea_level_pressure = sea_level_pressure;
-        altitude_record.altitude = bmp180_read_altitude(sea_level_pressure);
+        altitude_record.reference_pressure = reference_pressure;
+        altitude_record.altitude = bmp180_read_altitude(reference_pressure);
         ESP_LOGI(TAG, "Altitude (BMP180) %0.1f m", altitude_record.altitude);
 
         time_t now = 0;
@@ -145,8 +145,8 @@ void app_main()
 
     esp_err_t err = bmp180_init(I2C_PIN_SDA, I2C_PIN_SCL);
     if(err == ESP_OK){
-        xTaskCreate(&bmp180_task, "bmp180_task", 3 * 1024, NULL, 5, NULL);
-        ESP_LOGI(TAG, "BMP180 read task started");
+        xTaskCreate(&altitude_measure_task, "altitude_measure_task", 3 * 1024, NULL, 5, NULL);
+        ESP_LOGI(TAG, "Altitude measure task started");
     } else {
         ESP_LOGE(TAG, "BMP180 init failed with error = %d", err);
     }

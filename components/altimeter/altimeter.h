@@ -21,7 +21,7 @@ extern "C" {
 
 typedef struct {
     unsigned long pressure;  /*!< Pressure [Pa] measured with BM180 */
-    unsigned long sea_level_pressure;  /*!< Pressure [Pa] measured at the sea level */
+    unsigned long reference_pressure;  /*!< Pressure [Pa] measured at the sea level */
     float altitude;  /*!< Altitude [meters] measured with BM180 and compensated to the sea level pressure */
     float temperature;  /*!< Temperature [deg C] measured with BM180 */
     time_t timestamp;  /*!< Data and time the altitude measurement was taken */

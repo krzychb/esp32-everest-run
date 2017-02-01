@@ -75,17 +75,16 @@ static bool process_response_body(const char * response_body)
      */
 
     char *str_pos = strstr(response_body, "hPa");
-    if(str_pos != NULL) {
-        // terminate string where found 'hPa'
-        *str_pos = '\0';
-        char *str_pressure = str_pos - 7;
+    if (str_pos != NULL) {
+        *str_pos = '\0';  // terminate string where found 'hPa'
+        char *str_pressure = str_pos - 7;  // actual value is seven characters before 'hPa'
         ESP_LOGI(TAG, "Atmospheric pressure (str): %s", str_pressure);
-        // replace ',' found in some cases with '.'
+        // search for ',' and replace it with '.' as it is used alternatively as a decimal point
         str_pos = strchr(str_pressure, ',');
-        if(str_pos != NULL) {
+        if (str_pos != NULL) {
             *str_pos = '.';
         }
-        s_weather->pressure = atof(str_pressure);
+        s_weather->pressure = atof(str_pressure);  // convert string to float
         ESP_LOGI(TAG, "Atmospheric pressure (float): %0.1f", s_weather->pressure);
         return true;
     } else {

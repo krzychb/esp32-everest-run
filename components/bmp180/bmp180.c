@@ -175,10 +175,10 @@ uint32_t bmp180_read_pressure(void)
     return p;
 }
 
-float bmp180_read_altitude(unsigned long sea_level_pressure)
+float bmp180_read_altitude(unsigned long reference_pressure)
 {
     uint32_t absolute_pressure = bmp180_read_pressure();
-    return 44330 * (1.0 - powf(absolute_pressure / (float) sea_level_pressure, 0.190295));
+    return 44330 * (1.0 - powf(absolute_pressure / (float) reference_pressure, 0.190295));
 }
 
 

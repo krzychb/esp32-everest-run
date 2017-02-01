@@ -94,9 +94,9 @@ void thinkgspeak_post_data(altitude_data *altitude_record)
     char field1[n+1];
     sprintf(field1, "%lu", altitude_record->pressure);
     // 2. Sea Level Pressure
-    n = snprintf(NULL, 0, "%lu", altitude_record->sea_level_pressure);
+    n = snprintf(NULL, 0, "%lu", altitude_record->reference_pressure);
     char field2[n+1];
-    sprintf(field2, "%lu", altitude_record->sea_level_pressure);
+    sprintf(field2, "%lu", altitude_record->reference_pressure);
     // 3. Altitude
     n = snprintf(NULL, 0, "%.1f", altitude_record->altitude);
     char field3[n+1];

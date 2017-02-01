@@ -98,20 +98,25 @@ void keenio_post_data(altitude_data *altitude_record)
     strftime(strftime_buf, sizeof(strftime_buf), "%Y-%m-%dT%H:%M:%S%z", &timeinfo);
     ESP_LOGI(TAG, "UTC of measurement is: %s", strftime_buf);
 
-    char * json_query_template = "{\"Pressure\":%lu, \"Altitude\":%.1f,\"Temperature\":%.1f,\"Sea Level Pressure\":%lu,\"Up Time\":%lu}";
+    char * json_query_template =
+            "{\"Pressure\":%lu,"
+            "\"Altitude\":%.1f,"
+            "\"Temperature\":%.1f,"
+            "\"Reference Pressure\":%lu,"
+            "\"Up Time\":%lu}";
     long up_time = esp_log_timestamp()/1000l;
     int json_query_lenght = snprintf(NULL, 0, json_query_template,
             altitude_record->pressure,
             altitude_record->altitude,
             altitude_record->temperature,
-            altitude_record->sea_level_pressure,
+            altitude_record->reference_pressure,
             up_time);
     char json_query[json_query_lenght+1];
     sprintf(json_query, json_query_template,
             altitude_record->pressure,
             altitude_record->altitude,
             altitude_record->temperature,
-            altitude_record->sea_level_pressure,
+            altitude_record->reference_pressure,
             up_time);
     // Content length
     int n = snprintf(NULL, 0, "Content-Length: %d\n", json_query_lenght);
