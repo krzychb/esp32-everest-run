@@ -30,6 +30,7 @@ static const char* TAG = "KeenIO";
 // The API key below is configurable in menuconfig
 #define KEENIO_WRITE_API_KEY CONFIG_KEENIO_WRITE_API_KEY
 #define KEENIO_REQUEST_URL CONFIG_KEENIO_REQUEST_URL
+#define KEENIO_EVENT_COLLECTION CONFIG_KEENIO_EVENT_COLLECTION
 
 static const char* get_request_start =
     "POST "KEENIO_REQUEST_URL" HTTP/1.1\n"
@@ -88,46 +89,58 @@ static void disconnected(uint32_t *args)
     ESP_LOGD(TAG, "Free heap %u", xPortGetFreeHeapSize());
 }
 
-void keenio_post_data(altitude_data *altitude_record)
+void keenio_post_data(altitude_data *altitude_record, unsigned long record_count)
 {
-    // Prepare JSON query string
 
-    struct tm timeinfo = { 0 };
-    char strftime_buf[64];
-    localtime_r(&altitude_record->timestamp, &timeinfo);
-    strftime(strftime_buf, sizeof(strftime_buf), "%Y-%m-%dT%H:%M:%S%z", &timeinfo);
-    ESP_LOGI(TAG, "UTC of measurement is: %s", strftime_buf);
+    int json_lenght = 0;
+    char * json_start = "{\"everest-run-check\":[";
+    char * json_end = "]}";
+    json_lenght += strlen(json_start);
+    json_lenght += strlen(json_end);
+    // line below is to account for the last comma from string being removed
+    json_lenght -= 1;  // '\0' - space for string termination character
 
-    char * json_query_template =
+    char * json_record_template =
             "{\"Pressure\":%lu,"
             "\"Altitude\":%.1f,"
             "\"Temperature\":%.1f,"
             "\"Reference Pressure\":%lu,"
-            "\"Up Time\":%lu}";
-    long up_time = esp_log_timestamp()/1000l;
-    int json_query_lenght = snprintf(NULL, 0, json_query_template,
-            altitude_record->pressure,
-            altitude_record->altitude,
-            altitude_record->temperature,
-            altitude_record->reference_pressure,
-            up_time);
-    char json_query[json_query_lenght+1];
-    sprintf(json_query, json_query_template,
-            altitude_record->pressure,
-            altitude_record->altitude,
-            altitude_record->temperature,
-            altitude_record->reference_pressure,
-            up_time);
-    // Content length
-    int n = snprintf(NULL, 0, "Content-Length: %d\n", json_query_lenght);
+            "\"Logged\":%s,"
+            "\"Up Time\":%lu,"
+            "\"keen\":{\"timestamp\":\"%s\"}},";
+
+    struct tm timeinfo = { 0 };
+    char strftime_value[64];
+
+    int json_record_length = 0;
+    // total calculate size of json query string
+    for (unsigned long i=0; i<record_count; i++) {
+        localtime_r(&altitude_record[i].timestamp, &timeinfo);
+        strftime(strftime_value, sizeof(strftime_value), "%Y-%m-%dT%H:%M:%S%z", &timeinfo);
+        int str_lenght = snprintf(NULL, 0, json_record_template,
+                altitude_record[i].pressure,
+                altitude_record[i].altitude,
+                altitude_record[i].temperature,
+                altitude_record[i].reference_pressure,
+                altitude_record[i].logged ? "true" :"false",
+                altitude_record[i].up_time,
+                strftime_value);
+        if (str_lenght > json_record_length) {
+            json_record_length = str_lenght;
+        }
+        json_lenght += str_lenght;
+    }
+
+    // Content length update
+    int n = snprintf(NULL, 0, "Content-Length: %d\n", json_lenght);
     char header_contenth_lenght[n+1];
-    sprintf(header_contenth_lenght, "Content-Length: %d\n", json_query_lenght);
+    sprintf(header_contenth_lenght, "Content-Length: %d\n", json_lenght);
 
     // Request string size calculation
     int string_size = strlen(get_request_start);
     string_size += strlen(header_contenth_lenght);
     string_size += strlen(get_request_end);
-    string_size += strlen(json_query);
+    string_size += json_lenght;
     string_size += 1;  // '\0' - space for string termination character
 
     // Put the pieces of request string and JSON query together
@@ -135,7 +148,23 @@ void keenio_post_data(altitude_data *altitude_record)
     strcpy(get_request, get_request_start);
     strcat(get_request, header_contenth_lenght);
     strcat(get_request, get_request_end);
-    strcat(get_request, json_query);
+    strcat(get_request, json_start);
+
+    char json_record[json_record_length];
+    for (unsigned long i=0; i<record_count; i++) {
+        sprintf(json_record, json_record_template,
+                altitude_record[i].pressure,
+                altitude_record[i].altitude,
+                altitude_record[i].temperature,
+                altitude_record[i].reference_pressure,
+                altitude_record[i].logged ? "true" :"false",
+                altitude_record[i].up_time,
+                strftime_value);
+        strcat(get_request, json_record);
+    }
+    // remove last comma / overwrite it with string termination character
+    get_request[strlen(get_request)-1] = '\0';
+    strcat(get_request, json_end);
 
     // ToDo: REMOVE
     // print get request

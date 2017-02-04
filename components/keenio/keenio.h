@@ -21,7 +21,7 @@ extern "C" {
 #define ESP_ERR_KEENIO_BASE 0x60000
 #define ESP_ERR_KEENIO_POST_FAILED          (ESP_ERR_KEENIO_BASE + 1)
 
-void keenio_post_data(altitude_data *altitude_record);
+void keenio_post_data(altitude_data *altitude_record, unsigned long record_count);
 void keenio_initialise();
 
 #ifdef __cplusplus

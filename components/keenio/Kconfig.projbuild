@@ -9,14 +9,17 @@ config KEENIO_WRITE_API_KEY
 		You need to set up a free account on this site first.
 
 config KEENIO_REQUEST_URL
-    string "KeenIO project / collection specific request URL"
-	default "/3.0/projects/123456789012345678901234/events/event-collection-name"
+    string "Request URL and Keen.IO project ID"
+	default "/3.0/projects/123456789012345678901234/events"
 	help
 		Request URL containing Project ID obtained from 'https://keen.io/' site
 		
-		and user defined event collection name.
-		
 		You need to set up a free account on this site first.
 
-
+config KEENIO_EVENT_COLLECTION
+    string "Name of event collection"
+	default "everest-run-check"
+	help
+		Events will be saved / collected under this specific name
+		
 endmenu
