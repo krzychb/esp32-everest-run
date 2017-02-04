@@ -74,10 +74,14 @@ static bool process_response_body(const char * response_body)
        Return true if phrasing was successful or false if otherwise
      */
 
-    char *str_pos = strstr(response_body, "hPa");
+    char* str_pos = strstr(response_body, "hPa");
     if (str_pos != NULL) {
         *str_pos = '\0';  // terminate string where found 'hPa'
-        char *str_pressure = str_pos - 7;  // actual value is seven characters before 'hPa'
+        // identify beginning of pressure value in the string
+        char* str_pressure = str_pos - 7;  // actual value is > 999.9 hPa
+        if (str_pressure[0] < '0' || str_pressure[0] > '9') {
+            str_pressure = str_pos - 6;  // actual value is < 1000.0 hPa
+        }
         ESP_LOGI(TAG, "Atmospheric pressure (str): %s", str_pressure);
         // search for ',' and replace it with '.' as it is used alternatively as a decimal point
         str_pos = strchr(str_pressure, ',');
