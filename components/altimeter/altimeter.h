@@ -24,6 +24,8 @@ typedef struct {
     unsigned long reference_pressure;  /*!< Pressure [Pa] measured at the sea level */
     float altitude;  /*!< Altitude [meters] measured with BM180 and compensated to the sea level pressure */
     float temperature;  /*!< Temperature [deg C] measured with BM180 */
+    bool logged;  /*!< This record has been saved to logger before posting */
+    unsigned long up_time;  /*!< Time in seconds since last reboot of ESP32 */
     time_t timestamp;  /*!< Data and time the altitude measurement was taken */
 } altitude_data;
 
