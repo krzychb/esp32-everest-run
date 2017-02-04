@@ -44,10 +44,9 @@ static const char* TAG = "Altimeter";
 */
 #define I2C_PIN_SDA 25  // 25 - DevKitJ, 26 - Core Board
 #define I2C_PIN_SCL 27
-#define BP180_SENSOR_READ_PERIOD 20000
-altitude_data altitude_record = {0};
+#define BP180_SENSOR_READ_PERIOD 60000
 
-#define WEATHER_DATA_REREIVAL_PERIOD 20000
+#define WEATHER_DATA_REREIVAL_PERIOD 60000
 weather_pw_data weather = {0};
 
 void weather_data_retreived(uint32_t *args)
@@ -80,24 +79,27 @@ void blink_task(void *pvParameter)
 
 void altitude_measure_task(void *pvParameter)
 {
+    altitude_data altitude_record = {0};
+
     while(1) {
         altitude_record.pressure = (unsigned long) bmp180_read_pressure();
         altitude_record.temperature = bmp180_read_temperature();
-        ESP_LOGI(TAG, "Pressure (BMP180) %lu Pa", altitude_record.pressure);
-        ESP_LOGI(TAG, "Temperature (BMP180) %0.1f deg C", altitude_record.temperature);
         /* Compensate altitude measurement
-           using current pressure at the sea level
+           using current reference pressure, preferably at the sea level,
            obtained from weather station on internet
            Assume normal air pressure at sea level of 101325 Pa
            in case weather station is not available.
          */
         unsigned long reference_pressure = 101325l;
-        if (weather.pressure > 0){
+        if (weather.pressure > 0) {
             reference_pressure = (unsigned long) (weather.pressure * 100);
         }
         altitude_record.reference_pressure = reference_pressure;
         altitude_record.altitude = bmp180_read_altitude(reference_pressure);
         ESP_LOGI(TAG, "Altitude (BMP180) %0.1f m", altitude_record.altitude);
+
+        altitude_record.logged = false;
+        altitude_record.up_time = esp_log_timestamp()/1000l;
 
         time_t now = 0;
         if (time(&now) == -1) {
@@ -107,7 +109,7 @@ void altitude_measure_task(void *pvParameter)
         }
 
         thinkgspeak_post_data(&altitude_record);
-        keenio_post_data(&altitude_record);
+        keenio_post_data(&altitude_record, 1l);
 
         vTaskDelay(BP180_SENSOR_READ_PERIOD / portTICK_RATE_MS);
     }

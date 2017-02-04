@@ -112,10 +112,9 @@ void thinkgspeak_post_data(altitude_data *altitude_record)
     // 6. Empty
     // 7. Empty
     // 8. Up Time
-    long up_time = esp_log_timestamp()/1000l;
-    n = snprintf(NULL, 0, "%lu", up_time);
+    n = snprintf(NULL, 0, "%lu", altitude_record->up_time);
     char field8[n+1];
-    sprintf(field8, "%lu", up_time);
+    sprintf(field8, "%lu", altitude_record->up_time);
 
     // request string size calculation
     int string_size = strlen(get_request_start);
