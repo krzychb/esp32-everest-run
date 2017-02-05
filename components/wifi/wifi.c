@@ -80,6 +80,24 @@ void initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
     ESP_ERROR_CHECK( esp_wifi_start() );
 
-    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
-                        false, true, portMAX_DELAY);
+    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true, portMAX_DELAY);
+}
+
+
+/**
+@brief Check if Wi-Fi connection is alive
+ToDo: Check if we have internet connectivity available
+
+@return
+    - true - yes, we are connected
+    - false - no, we are not connected
+*/
+bool network_is_alive(void)
+{
+    EventBits_t uxBits = xEventGroupGetBits(wifi_event_group);
+    if (uxBits & CONNECTED_BIT) {
+        return true;
+    } else {
+        return false;
+    }
 }

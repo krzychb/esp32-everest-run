@@ -21,6 +21,7 @@ extern EventGroupHandle_t wifi_event_group;
 extern const int CONNECTED_BIT;
 
 void initialise_wifi(void);
+bool network_is_alive(void);
 
 #ifdef __cplusplus
 }

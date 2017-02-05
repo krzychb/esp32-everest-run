@@ -27,6 +27,9 @@
 
 #include "logger.h"
 
+// logger is or is not initialized for data logging
+static bool logger_initialized = false;
+
 static SemaphoreHandle_t sd_card_busy;
 
 // max 8 characters allowed for the filename
@@ -64,6 +67,7 @@ esp_err_t logger_open()
         return ret;
     }
 
+    logger_initialized = true;
     sd_card_busy = xSemaphoreCreateBinary();
     xSemaphoreGive(sd_card_busy);
 
@@ -364,11 +368,17 @@ esp_err_t logger_delete(unsigned long* file_count, unsigned long* file_list)
 }
 
 
-void logger_close()
+void logger_close(void)
 {
     static const char* LOGGER_CLOSE = "Logger";
 
     // All done, unmount partition and disable SDMMC host peripheral
     esp_vfs_fat_sdmmc_unmount();
     ESP_LOGI(LOGGER_CLOSE, "Card unmounted");
+}
+
+
+bool logger_is_open(void)
+{
+    return logger_initialized;
 }

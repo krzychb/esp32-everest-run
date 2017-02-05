@@ -22,10 +22,11 @@ extern "C" {
 
 
 #define ESP_ERR_LOGGER_BASE 0x50000
-#define ESP_ERR_LOGGER_DIR_OPEN_FAILED          (ESP_ERR_LOGGER_BASE + 1)
-#define ESP_ERR_LOGGER_DIR_CLOSE_FAILED         (ESP_ERR_LOGGER_BASE + 2)
-#define ESP_ERR_LOGGER_FILE_OPEN_READ_FAILED    (ESP_ERR_LOGGER_BASE + 3)
-#define ESP_ERR_LOGGER_FILE_OPEN_WRITE_FAILED   (ESP_ERR_LOGGER_BASE + 4)
+#define ESP_ERR_LOGGER_NOT_OPEN                 (ESP_ERR_LOGGER_BASE + 1)
+#define ESP_ERR_LOGGER_DIR_OPEN_FAILED          (ESP_ERR_LOGGER_BASE + 2)
+#define ESP_ERR_LOGGER_DIR_CLOSE_FAILED         (ESP_ERR_LOGGER_BASE + 3)
+#define ESP_ERR_LOGGER_FILE_OPEN_READ_FAILED    (ESP_ERR_LOGGER_BASE + 4)
+#define ESP_ERR_LOGGER_FILE_OPEN_WRITE_FAILED   (ESP_ERR_LOGGER_BASE + 5)
 
 esp_err_t logger_open();
 esp_err_t logger_save(altitude_data altitude_record);
@@ -34,6 +35,7 @@ esp_err_t logger_get_list(unsigned long* file_count, unsigned long* file_list);
 esp_err_t logger_read(altitude_data* altitude_record, unsigned long* file_count, unsigned long* file_list);
 esp_err_t logger_delete(unsigned long* file_count, unsigned long* file_list);
 void logger_close();
+bool logger_is_open(void);
 
 #ifdef __cplusplus
 }

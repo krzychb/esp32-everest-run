@@ -58,16 +58,9 @@ esp_err_t http_client_request(http_client_data *client, const char *web_server, 
     client->recv_buf = recv_buf;
     client->recv_buf_size = sizeof(recv_buf);
 
-    /* Wait for the callback to set the CONNECTED_BIT in the
-       event group.
-    */
-    ESP_LOGI(TAG, "Waiting for Wi-Fi");
-    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
-                       false, true, portMAX_DELAY);
-
     int err = getaddrinfo(web_server, "80", &hints, &res);
 
-    if(err != 0 || res == NULL) {
+    if (err != 0 || res == NULL) {
         ESP_LOGE(TAG, "DNS lookup failed err=%d res=%p", err, res);
         vTaskDelay(1000 / portTICK_RATE_MS);
         return ESP_ERR_HTTP_DNS_LOOKUP_FAILED;
@@ -80,7 +73,7 @@ esp_err_t http_client_request(http_client_data *client, const char *web_server, 
     ESP_LOGI(TAG, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
 
     s = socket(res->ai_family, res->ai_socktype, 0);
-    if(s < 0) {
+    if (s < 0) {
         ESP_LOGE(TAG, "... Failed to allocate socket.");
         freeaddrinfo(res);
         vTaskDelay(1000 / portTICK_RATE_MS);
@@ -88,7 +81,7 @@ esp_err_t http_client_request(http_client_data *client, const char *web_server, 
     }
     ESP_LOGI(TAG, "... allocated socket");
 
-    if(connect(s, res->ai_addr, res->ai_addrlen) != 0) {
+    if (connect(s, res->ai_addr, res->ai_addrlen) != 0) {
         ESP_LOGE(TAG, "... socket connect failed errno=%d", errno);
         close(s);
         freeaddrinfo(res);
@@ -117,7 +110,7 @@ esp_err_t http_client_request(http_client_data *client, const char *web_server, 
         if (client->http_process_chunk_cb) {
             client->http_process_chunk_cb((uint32_t*) client);
         }
-    } while(r > 0);
+    } while (r > 0);
 
     ESP_LOGI(TAG, "... done reading from socket. Last read return=%d errno=%d", r, errno);
     close(s);

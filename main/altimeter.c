@@ -26,6 +26,7 @@
 #include "weather_pw.h"
 #include "thingspeak.h"
 #include "keenio.h"
+#include "logger.h"
 
 static const char* TAG = "Altimeter";
 
@@ -42,9 +43,9 @@ static const char* TAG = "Altimeter";
 
 /* Define pins to connect I2C pressure sensor
 */
-#define I2C_PIN_SDA 25  // 25 - DevKitJ, 26 - Core Board
+#define I2C_PIN_SDA 26  // 25 - DevKitJ, 26 - Core Board
 #define I2C_PIN_SCL 27
-#define BP180_SENSOR_READ_PERIOD 60000
+#define BP180_SENSOR_READ_PERIOD 15000
 
 #define WEATHER_DATA_REREIVAL_PERIOD 60000
 weather_pw_data weather = {0};
@@ -96,7 +97,7 @@ void altitude_measure_task(void *pvParameter)
         }
         altitude_record.reference_pressure = reference_pressure;
         altitude_record.altitude = bmp180_read_altitude(reference_pressure);
-        ESP_LOGI(TAG, "Altitude (BMP180) %0.1f m", altitude_record.altitude);
+        ESP_LOGI(TAG, "Altitude %0.1f m", altitude_record.altitude);
 
         altitude_record.logged = false;
         altitude_record.up_time = esp_log_timestamp()/1000l;
@@ -108,8 +109,37 @@ void altitude_measure_task(void *pvParameter)
             altitude_record.timestamp = now;
         }
 
-        thinkgspeak_post_data(&altitude_record);
-        keenio_post_data(&altitude_record, 1l);
+        if (network_is_alive() == true) {
+
+            // post data to cloud
+            thinkgspeak_post_data(&altitude_record);
+            keenio_post_data(&altitude_record, 1l);
+
+            // post archive data to cloud
+            if (logger_is_open() == true) {
+                unsigned long file_count;
+                logger_peek(&file_count);
+                if (file_count > 0) {
+                    unsigned long file_list[file_count];
+                    logger_get_list(&file_count, file_list);
+                    altitude_data altitude_record[file_count];
+                    logger_read(altitude_record, &file_count, file_list);
+                    keenio_post_data(altitude_record, file_count);
+                    logger_delete(&file_count, file_list);
+                } else {
+                    ESP_LOGI(TAG, "Logger has no any files archived");
+                }
+            }
+        } else {
+            ESP_LOGW(TAG, "Wi-Fi connection is missing");
+            if (logger_is_open() == true) {
+                ESP_LOGI(TAG, "Archiving the data");
+                altitude_record.logged = true;
+                logger_save(altitude_record);
+            } else {
+                ESP_LOGE(TAG, "Logger is not open, unable to archive data");
+            }
+        }
 
         vTaskDelay(BP180_SENSOR_READ_PERIOD / portTICK_RATE_MS);
     }
@@ -145,11 +175,19 @@ void app_main()
     keenio_initialise();
     ESP_LOGI(TAG, "Posting to Keen.IO initialised");
 
+
     esp_err_t err = bmp180_init(I2C_PIN_SDA, I2C_PIN_SCL);
     if(err == ESP_OK){
         xTaskCreate(&altitude_measure_task, "altitude_measure_task", 3 * 1024, NULL, 5, NULL);
         ESP_LOGI(TAG, "Altitude measure task started");
     } else {
         ESP_LOGE(TAG, "BMP180 init failed with error = %d", err);
+    }
+
+    err = logger_open();
+    if(err == ESP_OK){
+        ESP_LOGI(TAG, "Logger ready");
+    } else {
+        ESP_LOGE(TAG, "Logger initialisation failed");
     }
 }

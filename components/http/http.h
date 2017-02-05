@@ -15,22 +15,18 @@
 extern "C" {
 #endif
 
-#include "freertos/event_groups.h"
 #include "esp_err.h"
-
-extern EventGroupHandle_t wifi_event_group;
-extern const int CONNECTED_BIT;
 
 typedef void (*http_callback)(uint32_t *args);
 
 typedef struct {
-    char *recv_buf;
-    int recv_buf_size;
-    char *proc_buf;
-    int proc_buf_size;
-    http_callback http_connected_cb;
-    http_callback http_process_chunk_cb;
-    http_callback http_disconnected_cb;
+    char *recv_buf;     /*!< Pointer to a receive buffer, data from the socket are collected here */
+    int recv_buf_size;  /*!< Size of the receive buffer */
+    char *proc_buf;     /*!< Pointer to processing buffer,  chunks of data from receive buffer and collected here. */
+    int proc_buf_size;  /*!< Size of processing buffer*/
+    http_callback http_connected_cb;       /*!< Pointer to function called once socket connection is established  */
+    http_callback http_process_chunk_cb;   /*!< Pointer to function called to process contents of receive buffer, once it is filled up */
+    http_callback http_disconnected_cb;    /*!< Pointer to function called after disconnecting from the socket */
 } http_client_data;
 
 #define ESP_ERR_HTTP_BASE 0x40000

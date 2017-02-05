@@ -29,8 +29,8 @@ static const char* TAG = "SNTP";
 void sync_time(void)
 {
     ESP_LOGI(TAG, "Waiting for Wi-Fi");
-    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
-                       false, true, portMAX_DELAY);
+
+    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true, portMAX_DELAY);
 
     ESP_LOGI(TAG, "Initialising");
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
