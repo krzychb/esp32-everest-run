@@ -103,6 +103,7 @@ void keenio_post_data(altitude_data *altitude_record, unsigned long record_count
     char * json_record_template =
             "{\"Pressure\":%lu,"
             "\"Altitude\":%.1f,"
+            "\"Altitude Climbed\":%.1f,"
             "\"Temperature\":%.1f,"
             "\"Reference Pressure\":%lu,"
             "\"Logged\":%s,"
@@ -120,6 +121,7 @@ void keenio_post_data(altitude_data *altitude_record, unsigned long record_count
         int str_lenght = snprintf(NULL, 0, json_record_template,
                 altitude_record[i].pressure,
                 altitude_record[i].altitude,
+                altitude_record[i].altitude_climbed,
                 altitude_record[i].temperature,
                 altitude_record[i].reference_pressure,
                 altitude_record[i].logged ? "true" :"false",
@@ -155,6 +157,7 @@ void keenio_post_data(altitude_data *altitude_record, unsigned long record_count
         sprintf(json_record, json_record_template,
                 altitude_record[i].pressure,
                 altitude_record[i].altitude,
+                altitude_record[i].altitude_climbed,
                 altitude_record[i].temperature,
                 altitude_record[i].reference_pressure,
                 altitude_record[i].logged ? "true" :"false",

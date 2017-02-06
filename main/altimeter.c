@@ -43,18 +43,26 @@ static const char* TAG = "Altimeter";
 
 /* Define pins to connect I2C pressure sensor
 */
-#define I2C_PIN_SDA 26  // 25 - DevKitJ, 26 - Core Board
+#define I2C_PIN_SDA 25  // 25 - DevKitJ, 26 - Core Board
 #define I2C_PIN_SCL 27
-#define BP180_SENSOR_READ_PERIOD 15000
+#define BP180_SENSOR_READ_PERIOD 12000
 
-#define WEATHER_DATA_REREIVAL_PERIOD 60000
-weather_pw_data weather = {0};
+// reference pressure retrieval
+#define WEATHER_DATA_RETREIVAL_INITAL_PERIOD 6000
+#define WEATHER_DATA_RETREIVAL_PERIOD 60000
+static unsigned long reference_pressure = 0;
+
+// Discriminate altitude changes
+// to calculate cumulative altitude climbed
+#define ALTITUDE_DISRIMINATION 1.5
+
 
 void weather_data_retreived(uint32_t *args)
 {
     weather_pw_data* weather = (weather_pw_data*)args;
 
-    ESP_LOGI(TAG, "Pressure: %0.1f hPa", weather->pressure);
+    reference_pressure = (unsigned long) (weather->pressure * 100);
+    ESP_LOGI(TAG, "Refrence pressure: %lu Pa", reference_pressure);
 }
 
 void blink_task(void *pvParameter)
@@ -81,8 +89,12 @@ void blink_task(void *pvParameter)
 void altitude_measure_task(void *pvParameter)
 {
     altitude_data altitude_record = {0};
+    static float altitude_climbed = 0.0;
+    static float altitude_last;  // last measurement for cumulative calculations
+    static int thingspeak_counter;
 
     while(1) {
+        ESP_LOGI(TAG, "Now measuring altitude");
         altitude_record.pressure = (unsigned long) bmp180_read_pressure();
         altitude_record.temperature = bmp180_read_temperature();
         /* Compensate altitude measurement
@@ -91,17 +103,19 @@ void altitude_measure_task(void *pvParameter)
            Assume normal air pressure at sea level of 101325 Pa
            in case weather station is not available.
          */
-        unsigned long reference_pressure = 101325l;
-        if (weather.pressure > 0) {
-            reference_pressure = (unsigned long) (weather.pressure * 100);
-        }
         altitude_record.reference_pressure = reference_pressure;
         altitude_record.altitude = bmp180_read_altitude(reference_pressure);
         ESP_LOGI(TAG, "Altitude %0.1f m", altitude_record.altitude);
 
-        altitude_record.logged = false;
-        altitude_record.up_time = esp_log_timestamp()/1000l;
+        float altitude_delta = altitude_record.altitude - altitude_last;
+        if (altitude_delta > ALTITUDE_DISRIMINATION) {
+            altitude_climbed += altitude_delta;
+            ESP_LOGD(TAG, "Altitude climbed  %0.1f m", altitude_climbed);
+        }
+        altitude_last = altitude_record.altitude;
+        altitude_record.altitude_climbed = altitude_climbed;
 
+        altitude_record.up_time = esp_log_timestamp()/1000l;
         time_t now = 0;
         if (time(&now) == -1) {
             ESP_LOGW(TAG, "Current calendar time is not available");
@@ -110,12 +124,13 @@ void altitude_measure_task(void *pvParameter)
         }
 
         if (network_is_alive() == true) {
-
-            // post data to cloud
-            thinkgspeak_post_data(&altitude_record);
+            // post data to Keen.IO
             keenio_post_data(&altitude_record, 1l);
-
-            // post archive data to cloud
+            // post data every other time to ThingSpeak
+            if (++thingspeak_counter % 2 == 0) {
+                thinkgspeak_post_data(&altitude_record);
+            }
+            // post archive data to Keen.IO
             if (logger_is_open() == true) {
                 unsigned long file_count;
                 logger_peek(&file_count);
@@ -145,6 +160,7 @@ void altitude_measure_task(void *pvParameter)
     }
 }
 
+
 void sync_time_task(void *pvParameter)
 {
     while(1) {
@@ -153,28 +169,47 @@ void sync_time_task(void *pvParameter)
     }
 }
 
+
 void app_main()
 {
     ESP_LOGI(TAG, "Starting");
+
     nvs_flash_init();
     initialise_wifi();
 
-    xTaskCreate(&sync_time_task, "sync_time_task", 2048, NULL, 5, NULL);
+    initialise_weather_pw_data_retrieval(WEATHER_DATA_RETREIVAL_INITAL_PERIOD);
+    on_weather_pw_data_retrieval(weather_data_retreived);
+    ESP_LOGI(TAG, "Weather data retreival initialised");
+
+    xTaskCreate(&sync_time_task, "sync_time_task", 2 * 1024, NULL, 5, NULL);
     ESP_LOGI(TAG, "Sync time task started");
+
+    ESP_LOGI(TAG, "Waiting for reference pressure update...");
+    int count_down = 10;
+    while (1) {
+        ESP_LOGI(TAG, "Waiting %d", count_down);
+        if (reference_pressure != 0) {
+            ESP_LOGI(TAG, "Update received");
+            break;
+        }
+        if (--count_down == 0) {
+            reference_pressure = 101325l;
+            ESP_LOGW(TAG, "Exit waiting. Assumed standard pressure at the sea level");
+            break;
+        }
+        vTaskDelay(WEATHER_DATA_RETREIVAL_INITAL_PERIOD / portTICK_RATE_MS);
+    }
+    ESP_LOGI(TAG, "Refrence pressure %lu Pa", reference_pressure);
+    update_weather_pw_data_retrieval(WEATHER_DATA_RETREIVAL_PERIOD);
 
     xTaskCreate(&blink_task, "blink_task", 512, NULL, 5, NULL);
     ESP_LOGI(TAG, "Blink task started");
-
-    initialise_weather_pw_data_retrieval(&weather, WEATHER_DATA_REREIVAL_PERIOD);
-    on_weather_pw_data_retrieval(&weather, weather_data_retreived);
-    ESP_LOGI(TAG, "Weather data retreival initialised");
 
     thinkgspeak_initialise();
     ESP_LOGI(TAG, "Posting to ThingSpeak initialised");
 
     keenio_initialise();
     ESP_LOGI(TAG, "Posting to Keen.IO initialised");
-
 
     esp_err_t err = bmp180_init(I2C_PIN_SDA, I2C_PIN_SCL);
     if(err == ESP_OK){
@@ -186,7 +221,7 @@ void app_main()
 
     err = logger_open();
     if(err == ESP_OK){
-        ESP_LOGI(TAG, "Logger ready");
+        ESP_LOGI(TAG, "Logger open for recording");
     } else {
         ESP_LOGE(TAG, "Logger initialisation failed");
     }

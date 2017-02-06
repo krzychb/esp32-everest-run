@@ -23,6 +23,7 @@ typedef struct {
     unsigned long pressure;  /*!< Pressure [Pa] measured with BM180 */
     unsigned long reference_pressure;  /*!< Pressure [Pa] measured at the sea level */
     float altitude;  /*!< Altitude [meters] measured with BM180 and compensated to the sea level pressure */
+    float altitude_climbed; /*!< Total altitude [meters] measured when climbing up (going down is not counted) */
     float temperature;  /*!< Temperature [deg C] measured with BM180 */
     bool logged;  /*!< This record has been saved to logger before posting */
     unsigned long up_time;  /*!< Time in seconds since last reboot of ESP32 */
