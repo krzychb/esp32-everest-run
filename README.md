@@ -39,7 +39,7 @@ For more details on project progress, please check [log book](log-book.md).
 This application is using code developed by:
 * [jsmn](https://github.com/zserge/jsmn) a minimalistic JSON parser by Serge Zaitsev
 * Software I2C library for ESP31B by Hristo Gochkov
-* [http](https://github.com/espressif/esp-idf/tree/master/examples/potocols/http_request) example by Angus Gratton
-* [sntp](https://github.com/espressif/esp-idf/tree/master/examples/potocols/sntp) example by Ivan Grokhotkov
+* [http_request](https://github.com/espressif/esp-idf/tree/master/examples/protocols/http_request) example by Angus Gratton
+* [sntp](https://github.com/espressif/esp-idf/tree/master/examples/protocols/sntp) example by Ivan Grokhotkov
 * [sd_card](https://github.com/espressif/esp-idf/tree/master/examples/storage/sd_card) example by Ivan Grokhotkov
 
