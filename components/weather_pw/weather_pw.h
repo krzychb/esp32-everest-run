@@ -29,8 +29,9 @@ typedef struct {
 #define ESP_ERR_WEATHER_PW_BASE 0x50000
 #define ESP_ERR_WEATHER_PW_RETREIVAL_FAILED          (ESP_ERR_WEATHER_PW_BASE + 1)
 
-void on_weather_pw_data_retrieval(weather_pw_data *weather, weather_pw_data_callback data_retreived_cb);
-void initialise_weather_pw_data_retrieval(weather_pw_data *weather, unsigned long retreival_period);
+void on_weather_pw_data_retrieval(weather_pw_data_callback data_retreived_cb);
+void initialise_weather_pw_data_retrieval(unsigned long retreival_period);
+void update_weather_pw_data_retrieval(unsigned long retreival_period);
 
 #ifdef __cplusplus
 }

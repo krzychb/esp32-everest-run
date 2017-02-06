@@ -39,7 +39,7 @@ static const char *get_request = "GET "WEB_URL" HTTP/1.1\n"
     "User-Agent: esp-idf esp32\n"
     "\n";
 
-static weather_pw_data* s_weather;
+static weather_pw_data weather;
 static http_client_data http_client = {0};
 
 /* Collect chunks of data received from server
@@ -88,8 +88,8 @@ static bool process_response_body(const char * response_body)
         if (str_pos != NULL) {
             *str_pos = '.';
         }
-        s_weather->pressure = atof(str_pressure);  // convert string to float
-        ESP_LOGI(TAG, "Atmospheric pressure (float): %0.1f", s_weather->pressure);
+        weather.pressure = atof(str_pressure);  // convert string to float
+        ESP_LOGI(TAG, "Atmospheric pressure (float): %0.1f", weather.pressure);
         return true;
     } else {
         ESP_LOGE(TAG, "Could not find any atmospheric pressure value");
@@ -116,8 +116,8 @@ static void disconnected(uint32_t *args)
 
     // execute callback if data was retrieved
     if (weather_pw_data_phrased) {
-        if (s_weather->data_retreived_cb) {
-            s_weather->data_retreived_cb((uint32_t*) s_weather);
+        if (weather.data_retreived_cb) {
+            weather.data_retreived_cb((uint32_t*) &weather);
         }
     }
     ESP_LOGD(TAG, "Free heap %u", xPortGetFreeHeapSize());
@@ -127,23 +127,27 @@ static void http_request_task(void *pvParameter)
 {
     while(1) {
         http_client_request(&http_client, WEB_SERVER, get_request);
-        vTaskDelay(s_weather->retreival_period / portTICK_RATE_MS);
+        vTaskDelay(weather.retreival_period / portTICK_RATE_MS);
     }
 }
 
-void on_weather_pw_data_retrieval(weather_pw_data *weather, weather_pw_data_callback data_retreived_cb)
+void on_weather_pw_data_retrieval(weather_pw_data_callback data_retreived_cb)
 {
-    weather->data_retreived_cb = data_retreived_cb;
+    weather.data_retreived_cb = data_retreived_cb;
 }
 
-void initialise_weather_pw_data_retrieval(weather_pw_data *weather, unsigned long retreival_period)
+void initialise_weather_pw_data_retrieval(unsigned long retreival_period)
 {
-    s_weather = weather;
-    weather->retreival_period = retreival_period;
+    weather.retreival_period = retreival_period;
 
     http_client_on_process_chunk(&http_client, process_chunk);
     http_client_on_disconnected(&http_client, disconnected);
 
-    xTaskCreate(&http_request_task, "http_request_task", 2 * 2048, NULL, 5, NULL);
+    xTaskCreate(&http_request_task, "http_request_task", 3 * 1024, NULL, 5, NULL);
     ESP_LOGI(TAG, "HTTP request task started");
+}
+
+void update_weather_pw_data_retrieval(unsigned long retreival_period)
+{
+    weather.retreival_period = retreival_period;
 }
