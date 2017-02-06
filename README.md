@@ -21,7 +21,7 @@ Internet connected altimeter for Everest Run - http://everestrun.pl/
 - [x] Synchronize time on ESP32 by obtaining it from a NTP server
 - [x] Compensate altitude measurement using [sea level pressure](https://en.wikipedia.org/wiki/Atmospheric_pressure#Mean_sea_level_pressure) obtained on-line
 - [x] Publish altitude measurements in real time on [ThingSpeak](https://thingspeak.com/channels/208884) and [KeenIO](https://keen.io)
-- [ ] Implement data buffering on ESP32 for the period of likely Wi-Fi connection losses
+- [x] Implement data buffering on ESP32 for the period of likely Wi-Fi connection losses
 - [ ] Build lightweight, battery powered altimeter using bare [ESP-WROOM-32](https://espressif.com/en/products/hardware/esp-wroom-32/overview) module
 - [ ] Test altimeter during weekly trainings organized by the group [Biegamy po schodach](https://www.facebook.com/groups/biegamyposchodach/)
 - [ ] Complete [Everest Run](http://everestrun.pl/) by climbing 2730 floors on 18 and 19 February 2017
@@ -39,5 +39,7 @@ For more details on project progress, please check [log book](log-book.md).
 This application is using code developed by:
 * [jsmn](https://github.com/zserge/jsmn) a minimalistic JSON parser by Serge Zaitsev
 * Software I2C library for ESP31B by Hristo Gochkov
-* [http](https://github.com/espressif/esp-idf/tree/master/examples/03_http_request) example by Angus Gratton
-* [sntp](https://github.com/espressif/esp-idf/tree/master/examples/06_sntp) example by Ivan Grokhotkov
+* [http](https://github.com/espressif/esp-idf/tree/master/examples/potocols/http_request) example by Angus Gratton
+* [sntp](https://github.com/espressif/esp-idf/tree/master/examples/potocols/sntp) example by Ivan Grokhotkov
+* [sd_card](https://github.com/espressif/esp-idf/tree/master/examples/storage/sd_card) example by Ivan Grokhotkov
+

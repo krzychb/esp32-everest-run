@@ -211,3 +211,10 @@ Sure enough, when using this value for compensation the altitude now fluctuates 
 
 I am really happy with this improvement. 
 Atmospheric pressure value obtained from [MeteoStation](http://www.if.pw.edu.pl/~meteo/okienkow.php) is measured at 135m over the mean sea level. Therefore, I have changed the name of this variable from `Sea Level Pressure` to `Reference Pressure`. The component that retrieves reference pressure is called [weather_pw](components/weather_pw).
+
+### Sixth training
+
+#### January 31st, 2017
+
+Back to the [Palace of Culture and Science](https://en.wikipedia.org/wiki/Palace_of_Culture_and_Science). The plan was to make 500 floors. I have made 15 x 26 = 390 floors climbing almost continuously for 2 hours. This was surprising issue but fortunately easy to explain. The floor of the Palace is higher comparing to younger Marriot or InterContinental. I am not sure about exact numbers but I believe there are 26 steps per floor in Palace and 18 in Marriot.
+
