@@ -182,18 +182,22 @@ Basing on that I decided to implemented alternate an plan discussed [above](#iss
 They do not provide weather data in JSON format like [OpenWeatherMap](https://openweathermap.org/), so I have to phrase what is displayed on their web page. Here is short code snippet searching for `hPa` string and extracting pressure value.
 
 ```c
-    char *str_pos = strstr(response_body, "hPa");
+    char* str_pos = strstr(response_body, "hPa");
     if (str_pos != NULL) {
-         *str_pos = '\0';  // terminate string where found 'hPa'
-        char *str_pressure = str_pos - 7;  // actual value is seven characters before ‘hPa’
+        *str_pos = '\0';  // terminate string where found 'hPa'
+        // identify beginning of pressure value in the string
+        char* str_pressure = str_pos - 7;  // actual value is > 999.9 hPa
+        if (str_pressure[0] < '0' || str_pressure[0] > '9') {
+            str_pressure = str_pos - 6;  // actual value is < 1000.0 hPa
+        }
         ESP_LOGI(TAG, "Atmospheric pressure (str): %s", str_pressure);
         // search for ',' and replace it with '.' as it is used alternatively as a decimal point
         str_pos = strchr(str_pressure, ',');
         if (str_pos != NULL) {
             *str_pos = '.';
         }
-        s_weather->pressure = atof(str_pressure);  // convert string to float
-        ESP_LOGI(TAG, "Atmospheric pressure (float): %0.1f", s_weather->pressure);
+        weather.pressure = atof(str_pressure);  // convert string to float
+        ESP_LOGI(TAG, "Atmospheric pressure (float): %0.1f", weather.pressure);
     } else {
         ESP_LOGE(TAG, "Could not find any atmospheric pressure value");
     }
@@ -217,4 +221,14 @@ Atmospheric pressure value obtained from [MeteoStation](http://www.if.pw.edu.pl/
 #### January 31st, 2017
 
 Back to the [Palace of Culture and Science](https://en.wikipedia.org/wiki/Palace_of_Culture_and_Science). The plan was to make 500 floors. I have made 15 x 26 = 390 floors climbing almost continuously for 2 hours. This was surprising issue but fortunately easy to explain. The floor of the Palace is higher comparing to younger Marriot or InterContinental. I am not sure about exact numbers but I believe there are 26 steps per floor in Palace and 18 in Marriot.
+
+### Seventh Training
+
+#### January 7th, 2017
+
+I have tested altimeter in real conditions during training at actual event place, i.e. in Marriot. I have climbed 420 floors. This was 10 rounds going up and down as Marriot has 42 floors. Training took two hours. Module has reset for unknown reason sometime in the middle of training. It was either a reboot due to exception or power cycling due to some vibrations when climbing. Below is a snapshot of recordings for the last four (almost complete) rounds after reset. Network coverage appeared to be very good. I did not see logger kicking in to save data. It would save the data if network is not available to send them out later once network is back. I consider removing logger functionality to make the application simpler and more robust. I did not have enough time to test logger’s operation in case of errors like SD card failure or reboot in a moment when data file is saved.
+
+![Measurements recorded with ESP32 during training on January 7th, 2017](pictures/seventh-training-recorded.png)
+
+The key measurement is on first chart on left and represents total altitude climbed - “Altitude Climbed [m]”. Chart “Altitude [m]” on the right shows the absolute altitude. Flat altitude values at the top represent time I have been waiting for the elevator. At the bottom there is no waiting – I have been going up shortly after leaving the elevator. Corresponding atmospheric pressure changes are shown right below as “Pressure [Pa]”. As pressure is dropping with altitude, this chart is almost a mirror reflection of “Altitude [m]”. Measurements have been compensated using “Reference Pressure [Pa]” shown on left. This value has been obtained on-line from [MeteoStation](http://www.if.pw.edu.pl/~meteo/okienkow.php). Finally the last two charts at the bottom represent module up time and temperature. Temperature was rising as I have been going up and decreasing when I have been going down with elevator.
 

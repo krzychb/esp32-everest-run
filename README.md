@@ -23,7 +23,7 @@ Internet connected altimeter for Everest Run - http://everestrun.pl/
 - [x] Publish altitude measurements in real time on [ThingSpeak](https://thingspeak.com/channels/208884) and [KeenIO](https://keen.io)
 - [x] Implement data buffering on ESP32 for the period of likely Wi-Fi connection losses
 - [ ] Build lightweight, battery powered altimeter using bare [ESP-WROOM-32](https://espressif.com/en/products/hardware/esp-wroom-32/overview) module
-- [ ] Test altimeter during weekly trainings organized by the group [Biegamy po schodach](https://www.facebook.com/groups/biegamyposchodach/)
+- [x] Test altimeter during weekly trainings organized by the group [Biegamy po schodach](https://www.facebook.com/groups/biegamyposchodach/)
 - [ ] Complete [Everest Run](http://everestrun.pl/) by climbing 2730 floors on 18 and 19 February 2017
 
 ## Altitude Measurements On-line
