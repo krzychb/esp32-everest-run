@@ -40,7 +40,7 @@ static const char *get_request = "GET " WEB_URL"?id="LOCATION_ID"&appid="OPENWEA
     "User-Agent: esp-idf/1.0 esp32\n"
     "\n";
 
-static weather_data* s_weather;
+static weather_data weather;
 static http_client_data http_client = {0};
 
 /* Collect chunks of data received from server
@@ -109,19 +109,19 @@ static bool process_response_body(const char * body)
                 str_length = t[i+1].end - t[i+1].start;
                 memcpy(subbuff, body + t[i+1].start, str_length);
                 subbuff[str_length] = '\0';
-                s_weather->humidity = atoi(subbuff);
+                weather.humidity = atoi(subbuff);
                 i++;
             } else if (jsoneq(body, &t[i], "temp") == 0) {
                 str_length = t[i+1].end - t[i+1].start;
                 memcpy(subbuff, body + t[i+1].start, str_length);
                 subbuff[str_length] = '\0';
-                s_weather->temperature = atof(subbuff);
+                weather.temperature = atof(subbuff);
                 i++;
             } else if (jsoneq(body, &t[i], "pressure") == 0) {
                 str_length = t[i+1].end - t[i+1].start;
                 memcpy(subbuff, body + t[i+1].start, str_length);
                 subbuff[str_length] = '\0';
-                s_weather->pressure = atoi(subbuff);
+                weather.pressure = atof(subbuff);
                 i++;
             }
         }
@@ -148,8 +148,8 @@ static void disconnected(uint32_t *args)
 
     // execute callback if data was retrieved
     if (weather_data_phrased) {
-        if (s_weather->data_retreived_cb) {
-            s_weather->data_retreived_cb((uint32_t*) s_weather);
+        if (weather.data_retreived_cb) {
+            weather.data_retreived_cb((uint32_t*) &weather);
         }
     }
     ESP_LOGD(TAG, "Free heap %u", xPortGetFreeHeapSize());
@@ -159,19 +159,18 @@ static void http_request_task(void *pvParameter)
 {
     while(1) {
         http_client_request(&http_client, WEB_SERVER, get_request);
-        vTaskDelay(s_weather->retreival_period / portTICK_RATE_MS);
+        vTaskDelay(weather.retreival_period / portTICK_RATE_MS);
     }
 }
 
-void on_weather_data_retrieval(weather_data *weather, weather_data_callback data_retreived_cb)
+void on_weather_data_retrieval(weather_data_callback data_retreived_cb)
 {
-    weather->data_retreived_cb = data_retreived_cb;
+    weather.data_retreived_cb = data_retreived_cb;
 }
 
-void initialise_weather_data_retrieval(weather_data *weather, unsigned long retreival_period)
+void initialise_weather_data_retrieval(unsigned long retreival_period)
 {
-    s_weather = weather;
-    weather->retreival_period = retreival_period;
+    weather.retreival_period = retreival_period;
 
     http_client_on_process_chunk(&http_client, process_chunk);
     http_client_on_disconnected(&http_client, disconnected);

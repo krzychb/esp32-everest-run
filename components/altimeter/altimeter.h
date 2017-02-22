@@ -15,6 +15,14 @@
 #include "esp_err.h"
 #include <time.h>
 
+/* Can run 'make menuconfig' to choose the GPIO to blink,
+   or you can edit the following line and set a number here.
+*/
+#define RED_BLINK_GPIO CONFIG_RED_BLINK_GPIO
+#define GREEN_BLINK_GPIO CONFIG_GREEN_BLINK_GPIO
+#define BLUE_BLINK_GPIO CONFIG_BLUE_BLINK_GPIO
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

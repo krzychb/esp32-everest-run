@@ -22,7 +22,7 @@ typedef void (*weather_data_callback)(uint32_t *args);
 typedef struct {
     unsigned int humidity;
     float temperature;
-    unsigned int pressure;
+    float pressure;
     unsigned long retreival_period;
     weather_data_callback data_retreived_cb;
 } weather_data;
@@ -30,8 +30,8 @@ typedef struct {
 #define ESP_ERR_WEATHER_BASE 0x50000
 #define ESP_ERR_WEATHER_RETREIVAL_FAILED          (ESP_ERR_WEATHER_BASE + 1)
 
-void on_weather_data_retrieval(weather_data *weather, weather_data_callback data_retreived_cb);
-void initialise_weather_data_retrieval(weather_data *weather, unsigned long retreival_period);
+void on_weather_data_retrieval(weather_data_callback data_retreived_cb);
+void initialise_weather_data_retrieval(unsigned long retreival_period);
 
 #ifdef __cplusplus
 }
