@@ -36,6 +36,7 @@ static const char* TAG = "Weather PW";
 static const char *get_request = "GET "WEB_URL" HTTP/1.1\n"
     "Host: "WEB_SERVER"\n"
     "Connection: close\n"
+    "Cache-Control: no-cache\n"
     "User-Agent: esp-idf esp32\n"
     "\n";
 
@@ -104,6 +105,11 @@ static void disconnected(uint32_t *args)
     bool weather_pw_data_phrased = false;
 
     const char * response_body = find_response_body(client->proc_buf);
+    //
+    // ToDo: Remove diagnostics
+    //
+    // printf("%s", response_body);
+
     if (response_body) {
         weather_pw_data_phrased = process_response_body(response_body);
     } else {
