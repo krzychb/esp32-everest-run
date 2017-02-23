@@ -232,3 +232,28 @@ I have tested altimeter in real conditions during training at actual event place
 
 The key measurement is on first chart on left and represents total altitude climbed - “Altitude Climbed [m]”. Chart “Altitude [m]” on the right shows the absolute altitude. Flat altitude values at the top represent time I have been waiting for the elevator. At the bottom there is no waiting – I have been going up shortly after leaving the elevator. Corresponding atmospheric pressure changes are shown right below as “Pressure [Pa]”. As pressure is dropping with altitude, this chart is almost a mirror reflection of “Altitude [m]”. Measurements have been compensated using “Reference Pressure [Pa]” shown on left. This value has been obtained on-line from [MeteoStation](http://www.if.pw.edu.pl/~meteo/okienkow.php). Finally the last two charts at the bottom represent module up time and temperature. Temperature was rising as I have been going up and decreasing when I have been going down with elevator.
 
+### Altimeter prototype
+
+#### February 16th, 2017
+
+For initial tests of altimeter I have been using [ESP-WROVER-KIT \(DevKitJ\)](https://espressif.com/sites/default/files/documentation/esp-wrover-kit_getting_started_guide_en.pdf). This is very convenient board for testing, but for the Everest Run I decided to build something smaller, so I can easier fit it into my pocket or attach to arm with a strap. I started off with schematics using only elements that are essential for operation of altimeter. For instance I do not need "build-in" USB to serial converter. For application loading I can attach an external converter. It can be then disconnected once altimeter is debugged and tested. My bare minimum design looks as below.
+
+| ![alt text](/pictures/esp32-everest-run-schematic.png "Schematic of altimeter") | ![alt text](/pictures/altimeter-on-breadboard.jpg "Altimeter on breadboard") |
+| :---: | :---: |
+| Schematic of altimeter | Altimeter on breadboard |
+
+To show some diagnostics on altimeter operation, I have fitted a RGB LED diode. Even if build into a single package, connected to the same voltage and resistors, perception of light intensity is different for each color. To fix it I have selected different resistor value to obtain similar intensity for each color.
+
+In next stage I have made more permanent design using a proto board to install diode, resistors and tactile switches. All elements were hold on a piece of frosted acrylic glass. Below are pictures of components before assembly.
+
+| ![alt text](/pictures/altimeter-components.jpg "Components to build altimeter ") | ![alt text](/pictures/interface-board.jpg "Assembled interface board") |
+| :---: | :---: |
+| Components to build altimeter | Assembled interface board |
+
+After couple of hours to put all elements together, the prototype of altimeter was ready. The black cylinder is a typical battery pack rated at 5V / 2200 mAh.
+
+| ![alt text](/pictures/assembled-altimeter-front.jpg "Assembled altimeter - front") | ![alt text](/pictures/assembled-altimeter-back.jpg "Assembled altimeter - back") |
+| :---: | :---: |
+| Assembled altimeter - front | Assembled altimeter - back |
+
+Initial tests were promising. Unfortunately later I have discovered issues, likely with power supply distribution. For some reason application was dying after couple of minutes of operation. No any error messages were shown. Replacement of drop down 5 to 3.3V converter with LDO did not help. I had no much time for detailed troubleshooting and decided to quickly hack out another solution.
