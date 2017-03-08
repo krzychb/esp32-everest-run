@@ -257,3 +257,25 @@ After couple of hours to put all elements together, the prototype of altimeter w
 | Assembled altimeter - front | Assembled altimeter - back |
 
 Initial tests were promising. Unfortunately later I have discovered issues, likely with power supply distribution. For some reason application was dying after couple of minutes of operation. No any error messages were shown. Replacement of drop down 5 to 3.3V converter with LDO did not help. I had no much time for detailed troubleshooting and decided to quickly hack out another solution.
+
+### Everest Run
+
+#### February 18th, 2017
+
+I have packed clothes and shoes, some food and the altimeter. Slightly after noon I arrived at the event place, collected my starting number, changed clothes and switched the altimeter on. By 13:00 I started climbing Marriot staircase together with 177 other enthusiasts.
+
+| ![alt text](/pictures/equipment-is-ready.jpg "Equipment for Everest Run is ready ") | ![alt text](/pictures/my-starting-number.jpg "My starting number") |
+| :---: | :---: |
+| Equipment for Everest Run is ready | My starting number |
+
+I was done by 6:15 next day in the morning after climbing 2268 floors or 7371 m (83% or Everest height). In between I made couple of breaks including sleep for about 45 min. Basing on my calculations I have burned about 15,000 calories. After event I felt quite good and did not suffer any pain in leg muscles or joints.
+ 
+Examining climbing log I have noted that altimeter reset four times during event. I believe this was caused by not properly secured wires of my prototype. The total attitude measured by altimeter was 8205 m. 
+
+![alt text](pictures/climbing-log.png "Climbing log")
+
+Because of issues with h/w and measurement accuracy I decided to redo altimeter design by making it more robust and precise. The group [Biegamy po schodach](https://www.facebook.com/groups/biegamyposchodach/) trains on weekly basis, so I have good conditions for testing design improvements and preparing for the next Everest Run.
+
+![alt text](pictures/my-everest-run-medal.jpg "My Everest Run 2017 medal")
+
+I have gathered valuable experience preparing for such event, designing h/w and s/w. Now making the total 8,848 m looks like far more manageable task.
