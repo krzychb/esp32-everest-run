@@ -68,6 +68,11 @@ void weather_data_retreived(uint32_t *args)
     ESP_LOGI(TAG, "Reference pressure: %lu Pa", reference_pressure);
 }
 
+
+/*
+   Blink LED over the period
+   when altimeter is active
+ */
 void blink_task(void *pvParameter)
 {
     while(1) {
@@ -112,7 +117,7 @@ void measure_altitude()
         altitude_record.timestamp = now;
     }
     // ToDo: Calculate module up time
-    // in case time is synchoronized woth NTP server
+    // in case time is synchronized with NTP server
     // altitude_record.up_time = esp_log_timestamp()/1000l;
     altitude_record.up_time = (unsigned long) now;
 
@@ -149,10 +154,10 @@ void app_main()
     thinkgspeak_initialise();
     ESP_LOGI(TAG, "Posting to ThingSpeak initialized");
 
-    ESP_LOGI(TAG, "Waiting for reference pressure update...");
     int count_down = 5;
     // first time update of reference pressure
     if (reference_pressure == 0l) {
+        ESP_LOGI(TAG, "Waiting for reference pressure update...");
         while (1) {
             ESP_LOGI(TAG, "Waiting %d", count_down);
             vTaskDelay(1000 / portTICK_RATE_MS);
